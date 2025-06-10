@@ -1,6 +1,6 @@
-import React, { useRef, useState, useEffect } from 'react';
+import { useRef, useState, useEffect } from 'react';
 import { useFrame } from '@react-three/fiber';
-import { useTexture } from '@react-three/drei';
+import { useTexture, Billboard } from '@react-three/drei';
 import { useSpring, animated } from '@react-spring/three';
 import useGameStore from '../../store/gameStore';
 import { checkCollision } from '../../utils/gameUtils';
@@ -272,18 +272,22 @@ const Enemy = ({ position, type, speed, playerPosition, mapData }) => {
       </mesh>
       
       {/* Versão sprite do inimigo usando os assets */}
-      <Sprite
+      <Billboard
         position={[0, 0.5, 0]}
         scale={[1.2, 1.2, 1.2]}
-        center={[0.5, 0.5]}
-        rotation={[0, Math.PI, 0]} // Rotaciona para ficar de frente para a câmera
+        follow={true}
+        lockX={false}
+        lockY={false}
+        lockZ={false}
       >
-        <spriteMaterial 
-          map={texture} 
-          transparent={true}
-          opacity={1}
-        />
-      </Sprite>
+        <plane args={[1, 1]}>
+          <meshBasicMaterial 
+            map={texture} 
+            transparent={true}
+            opacity={1}
+          />
+        </plane>
+      </Billboard>
       
       {/* Sombra sob o inimigo */}
       <mesh

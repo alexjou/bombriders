@@ -1,4 +1,3 @@
-import React from 'react';
 import { Canvas } from '@react-three/fiber';
 import { KeyboardControls } from '@react-three/drei';
 import GameCanvas from '../game/components/GameCanvas';
@@ -20,18 +19,16 @@ const GamePage = () => {
   return (
     <div className="w-full h-screen bg-black relative overflow-hidden">
       <KeyboardControls map={keyboardMap}>
-        <Canvas
-          camera={{
-            position: [0, 15, 10],
-            fov: 60,
-            near: 0.1,
-            far: 1000
-          }}
-          shadows
-          className="w-full h-full"
-        >
-          <GameCanvas />
-        </Canvas>
+        <div className="w-full h-full flex justify-center items-center">
+          <div className="w-4/5 h-4/5 relative shadow-2xl rounded-lg overflow-hidden">
+            <Canvas
+              shadows
+              className="w-full h-full"
+            >
+              <GameCanvas />
+            </Canvas>
+          </div>
+        </div>
         
         {/* UI Overlay */}
         <div className="absolute inset-0 pointer-events-none">
