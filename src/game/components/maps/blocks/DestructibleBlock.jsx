@@ -1,4 +1,3 @@
-import React from 'react';
 
 const DestructibleBlock = ({ position, mapType }) => {
   // Cores dos blocos destrutíveis baseadas no tipo de mapa
@@ -44,7 +43,13 @@ const DestructibleBlock = ({ position, mapType }) => {
       {/* Bloco principal */}
       <mesh castShadow receiveShadow position={[0, 0.5, 0]}>
         <boxGeometry args={[0.9, 0.9, 0.9]} />
-        <meshStandardMaterial color={colors.primary} />
+        <meshStandardMaterial 
+          color={colors.primary} 
+          roughness={0.6}
+          metalness={0.1}
+          emissive={colors.primary}
+          emissiveIntensity={0.15}
+        />
       </mesh>
       
       {/* Detalhes do bloco destrutível (estilo caixote) */}

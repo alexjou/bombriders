@@ -1,4 +1,3 @@
-import React from 'react';
 
 const WallBlock = ({ position, mapType }) => {
   // Cores das paredes baseadas no tipo de mapa
@@ -39,13 +38,27 @@ const WallBlock = ({ position, mapType }) => {
       {/* Bloco principal */}
       <mesh castShadow receiveShadow position={[0, 0.5, 0]}>
         <boxGeometry args={[1, 1, 1]} />
-        <meshStandardMaterial color={colors.primary} />
+        <meshStandardMaterial 
+          color={colors.primary} 
+          roughness={0.6}
+          metalness={0.2}
+          emissive={colors.primary}
+          emissiveIntensity={0.3} // Aumentado para maior visibilidade
+          // Define wireframe para depuração se necessário
+          // wireframe={true}
+        />
       </mesh>
       
       {/* Detalhes da parede */}
       <mesh castShadow position={[0, 0.5, 0.4]}>
         <boxGeometry args={[0.9, 0.9, 0.2]} />
-        <meshStandardMaterial color={colors.secondary} />
+        <meshStandardMaterial 
+          color={colors.secondary}
+          roughness={0.5}
+          metalness={0.3}
+          emissive={colors.secondary}
+          emissiveIntensity={0.1}
+        />
       </mesh>
       
       <mesh castShadow position={[0.4, 0.5, 0]}>

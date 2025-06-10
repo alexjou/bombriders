@@ -1,4 +1,3 @@
-import React from 'react';
 
 const GroundBlock = ({ position, mapType, isAlternate }) => {
   // Cores do chão baseadas no tipo de mapa
@@ -42,7 +41,13 @@ const GroundBlock = ({ position, mapType, isAlternate }) => {
       receiveShadow
     >
       <planeGeometry args={[1, 1]} />
-      <meshStandardMaterial color={color} />
+      <meshStandardMaterial 
+        color={color} 
+        roughness={0.7}
+        metalness={0.1}
+        emissive={color} 
+        emissiveIntensity={0.1} // Leve brilho para ser visível mesmo em baixa iluminação
+      />
     </mesh>
   );
 };

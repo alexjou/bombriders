@@ -1,5 +1,6 @@
 import { Canvas } from '@react-three/fiber';
 import { KeyboardControls } from '@react-three/drei';
+import * as THREE from 'three';
 import GameCanvas from '../game/components/GameCanvas';
 import GameUI from '../game/components/ui/GameUI';
 import useGameStore from '../game/store/gameStore';
@@ -24,7 +25,28 @@ const GamePage = () => {
             <Canvas
               shadows
               className="w-full h-full"
+              gl={{ 
+                antialias: true,  
+                alpha: true,
+                preserveDrawingBuffer: true,
+                logarithmicDepthBuffer: true,
+                physicallyCorrectLights: true,
+                toneMapping: 'ACESFilmic',
+                precision: "highp"
+              }}
+              camera={{
+                fov: 60,
+                position: [15, 15, 15],
+                near: 0.1,
+                far: 1000
+              }}
+              onCreated={({ gl, scene }) => {
+                gl.setClearColor("#222222");
+                gl.setPixelRatio(window.devicePixelRatio);
+                scene.background = new THREE.Color("#222222");
+              }}
             >
+              <color attach="background" args={["#222222"]} />
               <GameCanvas />
             </Canvas>
           </div>
