@@ -24,6 +24,7 @@ const GameUI = () => {
   };
   
   const handleRestartGame = () => {
+    console.log("Reiniciando o jogo...");
     resetGame();
     setGameState('menu');
   };

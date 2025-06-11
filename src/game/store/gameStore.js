@@ -117,25 +117,29 @@ const useGameStore = create((set) => ({
   })),
 
   // Reset do jogo
-  resetGame: () => set({
-    gameState: 'menu',
-    currentMap: null,
-    mapData: null,
-    player: {
-      character: 'Aria',
-      position: { x: 0, y: 0 },
-      lives: 3,
-      bombs: 1,
-      bombRange: 1,
-      speed: 1,
-      powerUps: [],
-      currentDino: null,
-      score: 0, // Score resetado dentro do player
-    },
-    enemies: [],
-    activeBombs: [],
-    collectedDinos: [],
-  }),
+  resetGame: () => {
+    console.log("resetGame chamado no gameStore");
+    set({
+      gameState: 'menu',
+      currentMap: null,
+      mapData: null,
+      player: {
+        character: 'Aria',
+        position: { x: 0, y: 0 },
+        lives: 3,
+        bombs: 1,
+        bombRange: 1,
+        speed: 1,
+        powerUps: [],
+        currentDino: null,
+        score: 0, // Score resetado dentro do player
+      },
+      enemies: [],
+      activeBombs: [],
+      collectedDinos: [],
+    });
+    console.log("Estado do jogo resetado com sucesso");
+  },
 }));
 
 export default useGameStore;

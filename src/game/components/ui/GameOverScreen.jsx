@@ -17,7 +17,10 @@ const GameOverScreen = ({ score, onRestart }) => {
             variant="default" 
             size="lg" 
             className="w-full"
-            onClick={onRestart}
+            onClick={() => {
+              console.log("Botão Jogar Novamente clicado");
+              onRestart();
+            }}
           >
             Jogar Novamente
           </Button>
@@ -26,7 +29,10 @@ const GameOverScreen = ({ score, onRestart }) => {
             variant="outline" 
             size="lg" 
             className="w-full"
-            onClick={() => onRestart()}
+            onClick={() => {
+              console.log("Botão Voltar ao Menu clicado");
+              onRestart();
+            }}
           >
             Voltar ao Menu
           </Button>

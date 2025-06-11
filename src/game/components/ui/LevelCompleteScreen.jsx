@@ -12,12 +12,14 @@ const LevelCompleteScreen = ({ score, onNextLevel, onMainMenu }) => {
           <p className="text-4xl font-bold text-primary">{score}</p>
         </div>
         
-        <div className="space-y-4">
-          <Button 
+        <div className="space-y-4">          <Button 
             variant="default" 
             size="lg" 
             className="w-full"
-            onClick={onNextLevel}
+            onClick={() => {
+              console.log("Botão Próximo Nível clicado");
+              onNextLevel();
+            }}
           >
             Próximo Nível
           </Button>
@@ -26,7 +28,10 @@ const LevelCompleteScreen = ({ score, onNextLevel, onMainMenu }) => {
             variant="outline" 
             size="lg" 
             className="w-full"
-            onClick={onMainMenu}
+            onClick={() => {
+              console.log("Botão Voltar ao Menu clicado");
+              onMainMenu();
+            }}
           >
             Voltar ao Menu
           </Button>

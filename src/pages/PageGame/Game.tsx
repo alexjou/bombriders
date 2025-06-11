@@ -1,4 +1,4 @@
-import { OrbitControls, OrthographicCamera, Html } from '@react-three/drei'; // Adicionado Html
+import { OrbitControls, OrthographicCamera } from '@react-three/drei'; // Adicionado Html
 import { useState, useEffect, useCallback, useRef } from 'react'; // Adicionado useRef
 import Block from './Block';
 import Player from './Player';
@@ -120,7 +120,7 @@ const processSingleBombExplosion = (
   explosionEffects: ExplosionData[];
   powerUpsToSpawn: { type: CellType; row: number; col: number }[]; // NOVO
 } => {
-  const newGrid = currentGrid.map(r => [...r]);  const affectedCells: { row: number; col: number }[] = [];
+  const newGrid = currentGrid.map(r => [...r]); const affectedCells: { row: number; col: number }[] = [];
   const explosionEffects: ExplosionData[] = [];
   const powerUpsToSpawn: { type: CellType; row: number, col: number }[] = []; // NOVO
   const currentBombRange = bombToExplde.range;
@@ -279,8 +279,61 @@ export default function Game() {
     addPlayerBomb,
     increaseBombRange,
     setGameState,
-    removeEnemy // Função que atualiza o score ao remover inimigos
+    removeEnemy, // Função que atualiza o score ao remover inimigos
+    gameState // Acessar o estado atual do jogo
   } = useGameStore();
+
+  // Adicionar um efeito para escutar mudanças no gameState
+  useEffect(() => {
+    // Quando o gameState muda para 'menu', reiniciar o jogo
+    if (gameState === 'menu') {
+      console.log("Estado do jogo mudou para 'menu', reiniciando...");
+
+      // Criar novos inimigos
+      const newEnemies = createInitialEnemies();
+      initialEnemies.current = newEnemies;
+      setEnemies(newEnemies);
+
+      // Recriar grid
+      const newGrid = createInitialGrid(newEnemies);
+      setGrid(newGrid);
+
+      // Resetar posição do jogador
+      setPlayerPosition([PLAYER_START_COL, PLAYER_START_ROW]);
+      setPlayerTargetPosition(undefined);
+
+      // Resetar bombas
+      setBombs([]);
+      bombsRef.current = [];
+
+      // Resetar explosões
+      setExplosions([]);
+
+      // Resetar vida do jogador
+      setPlayerLives(PLAYER_INITIAL_LIVES);
+      setIsPlayerInvincible(false);
+
+      // Resetar bombas e alcance
+      setPlayerBombRange(INITIAL_BOMB_RANGE);
+      setPlayerMaxBombs(INITIAL_MAX_BOMBS);
+
+      // Resetar estado de jogo
+      setIsGameOver(false);
+      isGameOverRef.current = false;
+
+      // Limpar todos os timeouts pendentes
+      chainReactionTimeoutsRef.current.forEach(clearTimeout);
+      chainReactionTimeoutsRef.current = [];
+
+      if (invincibilityTimerRef.current) {
+        clearTimeout(invincibilityTimerRef.current);
+        invincibilityTimerRef.current = null;
+      }
+
+      // Limpar set de bombas
+      recentlyExplodedOrScheduledBombIdsRef.current.clear();
+    }
+  }, [gameState]); // Dependência no estado do jogo do store
 
   const get3DPosition = useCallback((col: number, row: number): [number, number, number] => {
     return [
@@ -377,11 +430,12 @@ export default function Game() {
     });
 
     // 4. Processar dano ao jogador (envolvido em setTimeout para pegar a posição mais recente do jogador)
-    const damageCheckTimeoutId = window.setTimeout(() => {      const [pCol, pRow] = playerPositionRef.current;
+    const damageCheckTimeoutId = window.setTimeout(() => {
+      const [pCol, pRow] = playerPositionRef.current;
       console.log(`Verificando dano ao jogador (TIMEOUT para ${bombToExplode.id}). Posição Jogador: [${pCol}, ${pRow}]`);
       console.log("Células afetadas pela explosão (para dano ao jogador):", JSON.stringify(affectedCells));
       console.log(`Bomba que explodiu: [${bombToExplode.col}, ${bombToExplode.row}]`);
-      
+
       // Verifica se o jogador está exatamente na posição da bomba
       const playerOnBomb = pCol === bombToExplode.col && pRow === bombToExplode.row;
       if (playerOnBomb) {
@@ -463,9 +517,8 @@ export default function Game() {
 
   const handleExplosionComplete = useCallback((explosionId: string) => {
     setExplosions(prev => prev.filter(exp => exp.id !== explosionId));
-  }, []);
-  const placeBomb = useCallback(() => {
-    if (isGameOverRef.current) return; // Apenas impede se o jogo acabou
+  }, []); const placeBomb = useCallback(() => {
+    if (isGameOverRef.current || gameState !== 'playing') return; // Impede se o jogo acabou ou não está no estado 'playing'
 
     // Agora permite colocar bomba mesmo em movimento (removida a checagem isPlayerMovingRef.current)
 
@@ -496,10 +549,10 @@ export default function Game() {
     setBombs(prevBombs => [...prevBombs, newBomb]);
     console.log(`Bomba ${newBombId} colocada em [${playerCol}, ${playerRow}] com range ${playerBombRangeRef.current}`);
 
-  }, [playerPosition, initiateExplosionChain, /* Adicionar playerMaxBombsRef e playerBombRangeRef como dependências se não forem estáveis, mas refs são */]);
-
+  }, [playerPosition, initiateExplosionChain, gameState, /* Adicionar playerMaxBombsRef e playerBombRangeRef como dependências se não forem estáveis, mas refs são */]);
   const movePlayer = useCallback((dx: number, dy: number) => {
-    if (isGameOverRef.current) return; // Impede movimento se o jogo acabou    // Se o jogador está em movimento, armazena o último comando de direção para sensação de jogo mais responsivo
+    if (isGameOverRef.current || gameState !== 'playing') return; // Impede movimento se o jogo acabou ou não está no estado 'playing'
+    // Se o jogador está em movimento, armazena o último comando de direção para sensação de jogo mais responsivo
     if (isPlayerMovingRef.current) {
       // Armazenar a última direção solicitada para executar quando o movimento atual terminar
       // (Esta parte poderia ser expandida com um sistema de buffer de movimentos)
@@ -605,7 +658,7 @@ export default function Game() {
     playerPositionRef.current = [newCol, newRow];
     // Nota: não precisamos de um setTimeout aqui, o callback onMovementComplete
     // será chamado automaticamente quando a animação visual terminar
-  }, [setPlayerBombRange, setPlayerMaxBombs, setGrid, setPlayerPosition, setPlayerTargetPosition, setIsPlayerMoving, setPlayerLives, setIsPlayerInvincible, setIsGameOver, get3DPosition]);
+  }, [setPlayerBombRange, setPlayerMaxBombs, setGrid, setPlayerPosition, setPlayerTargetPosition, setIsPlayerMoving, setPlayerLives, setIsPlayerInvincible, setIsGameOver, get3DPosition, gameState]);
 
   // Função chamada quando o movimento do jogador é concluído
   const handlePlayerMovementComplete = useCallback(() => {
@@ -614,10 +667,14 @@ export default function Game() {
     isPlayerMovingRef.current = false;
     setPlayerTargetPosition(undefined);
   }, []);
-
   // Efeito para movimentar inimigos
-  useEffect(() => {
-    if (isGameOverRef.current) return;
+  useEffect(() => {    // Não executa se o jogo estiver finalizado ou se não estiver no estado 'playing'
+    if (isGameOverRef.current || gameState !== 'playing') {
+      console.log("Movimento dos inimigos ignorado - Estado do jogo: ", gameState, "Game Over:", isGameOverRef.current);
+      return;
+    }
+
+    console.log("Iniciando movimentação de inimigos - Estado do jogo:", gameState);
 
     const intervalId = setInterval(() => {
       setEnemies(currentEnemies => {
@@ -701,8 +758,11 @@ export default function Game() {
               });
               return { ...enemy };
             }
+          }          // Se não houve colisão com o jogador, inimigo se move para nextMove
+          const moved = enemy.row !== nextMove.r || enemy.col !== nextMove.c;
+          if (moved) {
+            console.log(`Inimigo ${enemy.id} se moveu de [${enemy.col},${enemy.row}] para [${nextMove.c},${nextMove.r}]`);
           }
-          // Se não houve colisão com o jogador, inimigo se move para nextMove
           return { ...enemy, row: nextMove.r, col: nextMove.c };
         });
         return nextEnemiesState;
@@ -710,7 +770,7 @@ export default function Game() {
     }, ENEMY_MOVE_INTERVAL);
 
     return () => clearInterval(intervalId);
-  }, [gridRef, playerPositionRef, bombsRef, isPlayerInvincibleRef, isGameOverRef, invincibilityTimerRef, setEnemies, setPlayerLives, setIsGameOver, setIsPlayerInvincible]); // Removido enemiesRef, adicionados setters e refs corretos
+  }, [gridRef, playerPositionRef, bombsRef, isPlayerInvincibleRef, isGameOverRef, invincibilityTimerRef, setEnemies, setPlayerLives, setIsGameOver, setIsPlayerInvincible, gameState]); // Adicionado gameState para controlar o movimento dos inimigos
   useEffect(() => {
     bombsRef.current = bombs;
   }, [bombs]);
@@ -720,11 +780,10 @@ export default function Game() {
   const keyProcessIntervalRef = useRef<number | null>(null);
   // Ref para rastrear a última direção de movimento (para alternar em movimentos diagonais)
   const lastMovementDirectionRef = useRef<'horizontal' | 'vertical'>('horizontal');
-
   useEffect(() => {
     // Handler para tecla pressionada
     const handleKeyDown = (event: KeyboardEvent) => {
-      if (isGameOverRef.current) return;
+      if (isGameOverRef.current || gameState !== 'playing') return;
       const key = event.key.toLowerCase();
 
       // Registra a tecla como pressionada
@@ -742,11 +801,9 @@ export default function Game() {
       const key = event.key.toLowerCase();
       // Remove a tecla da lista de teclas pressionadas
       delete keysPressed.current[key];
-    };
-
-    // Função para processar as teclas pressionadas periodicamente
+    };    // Função para processar as teclas pressionadas periodicamente
     const processKeys = () => {
-      if (isGameOverRef.current) return;
+      if (isGameOverRef.current || gameState !== 'playing') return;
 
       // Não processa teclas se o jogador já está em movimento
       if (isPlayerMovingRef.current) return;      // Processa as teclas de movimento permitindo movimentos tanto horizontais quanto verticais
@@ -810,7 +867,7 @@ export default function Game() {
         keyProcessIntervalRef.current = null;
       }
     };
-  }, [movePlayer, placeBomb, isGameOverRef, isPlayerMovingRef]);
+  }, [movePlayer, placeBomb, isGameOverRef, isPlayerMovingRef, gameState]);
   useEffect(() => {
     return () => {
       bombsRef.current.forEach(bomb => {
@@ -856,20 +913,14 @@ export default function Game() {
     // Se o jogo acabar, atualize o estado do jogo
     else if (isGameOver) {
       setGameState('gameOver');
-    } else {
-      setGameState('playing');
     }
 
     console.log(`Vidas: ${playerLives}, Invencível: ${isPlayerInvincible}, Game Over: ${isGameOver}`);
   }, [playerLives, isPlayerInvincible, isGameOver, playerBombRange, playerMaxBombs]);
-
   return (
-    <>      {/* UI Elements wrapped in Html - Botão de reiniciar removido */}
-      <Html fullscreen zIndexRange={[100, 0]}>
-        {/* O botão de GAME OVER foi removido, pois agora usamos o GameOverScreen do GameUI.jsx */}
-      </Html>
+    <>      {/* Componente HTML removido porque estava bloqueando interações com botões */}
 
-      {/* Cena 3D */}
+      {/* Cena 3D - só renderiza elementos do jogo quando o estado for 'playing', 'paused', 'gameOver' ou 'levelComplete' */}
       <OrthographicCamera
         makeDefault
         zoom={35} // Este valor de zoom pode precisar de ajuste fino posteriormente
@@ -883,57 +934,69 @@ export default function Game() {
       {/* @ts-ignore - ambientLight é um componente válido do Three.js/React-Three-Fiber */}
       <ambientLight intensity={0.8} />
       {/* @ts-ignore - directionalLight é um componente válido do Three.js/React-Three-Fiber */}
-      <directionalLight intensity={1.2} castShadow />      {/* Plano de Chão Verde */}
-      {/* @ts-ignore - mesh é um componente válido do Three.js/React-Three-Fiber */}
-      <mesh receiveShadow position={[gridCenterX - CELL_SIZE / 2, -0.05, gridCenterZ - CELL_SIZE / 2]} rotation={[-Math.PI / 2, 0, 0]}>
-        {/* @ts-ignore - planeGeometry é um componente válido do Three.js/React-Three-Fiber */}
-        <planeGeometry args={[GRID_COLUMNS * CELL_SIZE * 2, GRID_ROWS * CELL_SIZE * 2]} /> {/* Plano maior */}        {/* @ts-ignore - meshStandardMaterial é um componente válido do Three.js/React-Three-Fiber */}
-        <meshStandardMaterial color="#669966" /> {/* Verde gramado */}
-        {/* @ts-ignore - mesh é um componente válido do Three.js/React-Three-Fiber */}
-      </mesh>
+      <directionalLight intensity={1.2} castShadow />
 
-      {grid.map((row, rIndex) =>
-        row.map((cellType, cIndex) => {
-          const position3D = get3DPosition(cIndex, rIndex);
-          if (cellType === CellType.SOLID_BLOCK || cellType === CellType.DESTRUCTIBLE_BLOCK) {
-            return <Block key={`block-${rIndex}-${cIndex}`} position={position3D} type={cellType} />;
-          }
-          // NOVO: Renderizar PowerUps
-          if (cellType === CellType.POWERUP_BOMB_RANGE || cellType === CellType.POWERUP_MAX_BOMBS) {
-            return <PowerUp key={`powerup-${rIndex}-${cIndex}`} position={position3D} type={cellType} />;
-          }
-          return null;
-        })
+      {/* Renderiza o jogo somente quando não estiver no menu */}
+      {gameState !== 'menu' && (
+        <>
+          {/* Plano de Chão Verde */}
+          {/* @ts-ignore - mesh é um componente válido do Three.js/React-Three-Fiber */}
+          <mesh receiveShadow position={[gridCenterX - CELL_SIZE / 2, -0.05, gridCenterZ - CELL_SIZE / 2]} rotation={[-Math.PI / 2, 0, 0]}>
+            {/* @ts-ignore - planeGeometry é um componente válido do Three.js/React-Three-Fiber */}
+            <planeGeometry args={[GRID_COLUMNS * CELL_SIZE * 2, GRID_ROWS * CELL_SIZE * 2]} /> {/* Plano maior */}
+            {/* @ts-ignore - meshStandardMaterial é um componente válido do Three.js/React-Three-Fiber */}
+            <meshStandardMaterial color="#669966" /> {/* Verde gramado */}
+            {/* @ts-ignore - mesh é um componente válido do Three.js/React-Three-Fiber */}
+          </mesh>
+
+          {grid.map((row, rIndex) =>
+            row.map((cellType, cIndex) => {
+              const position3D = get3DPosition(cIndex, rIndex);
+              if (cellType === CellType.SOLID_BLOCK || cellType === CellType.DESTRUCTIBLE_BLOCK) {
+                return <Block key={`block-${rIndex}-${cIndex}`} position={position3D} type={cellType} />;
+              }
+              // NOVO: Renderizar PowerUps
+              if (cellType === CellType.POWERUP_BOMB_RANGE || cellType === CellType.POWERUP_MAX_BOMBS) {
+                return <PowerUp key={`powerup-${rIndex}-${cIndex}`} position={position3D} type={cellType} />;
+              }
+              return null;
+            })
+          )}
+
+          {/* Renderizar Inimigos */}
+          {enemies.map(enemy => (
+            <Enemy key={enemy.id} position={get3DPosition(enemy.col, enemy.row)} />
+          ))}
+
+          {bombs.map(bomb => (
+            <BombComponent key={bomb.id} position={get3DPosition(bomb.col, bomb.row)} />
+          ))}
+
+          {explosions.map(exp => (
+            <ExplosionEffect
+              key={exp.id}
+              position={exp.position}
+              onComplete={() => handleExplosionComplete(exp.id)}
+            />
+          ))}
+
+          {!isGameOver && (
+            <Player
+              gridPosition={get3DPosition(playerPosition[0], playerPosition[1])}
+              targetPosition={playerTargetPosition}
+              isInvincible={isPlayerInvincible}
+              moveSpeed={7.5} // Aumentado para 7.5 para movimento mais rápido mas ainda suave
+              onMovementComplete={handlePlayerMovementComplete}
+            />
+          )}
+
+          {/* @ts-ignore - gridHelper é um componente válido do Three.js/React-Three-Fiber */}
+          <gridHelper
+            args={[Math.max(GRID_COLUMNS, GRID_ROWS) * CELL_SIZE, Math.max(GRID_COLUMNS, GRID_ROWS), '#555', '#444']}
+            position={[gridCenterX - CELL_SIZE / 2, 0, gridCenterZ - CELL_SIZE / 2]}
+          />
+        </>
       )}
-
-      {/* Renderizar Inimigos */}
-      {enemies.map(enemy => (
-        <Enemy key={enemy.id} position={get3DPosition(enemy.col, enemy.row)} />
-      ))}
-
-      {bombs.map(bomb => (
-        <BombComponent key={bomb.id} position={get3DPosition(bomb.col, bomb.row)} />
-      ))}
-
-      {explosions.map(exp => (
-        <ExplosionEffect
-          key={exp.id}
-          position={exp.position}
-          onComplete={() => handleExplosionComplete(exp.id)}
-        />
-      ))}      {!isGameOver && (
-        <Player
-          gridPosition={get3DPosition(playerPosition[0], playerPosition[1])}
-          targetPosition={playerTargetPosition}
-          isInvincible={isPlayerInvincible}
-          moveSpeed={7.5} // Aumentado para 7.5 para movimento mais rápido mas ainda suave
-          onMovementComplete={handlePlayerMovementComplete}
-        />
-      )}      {/* @ts-ignore - gridHelper é um componente válido do Three.js/React-Three-Fiber */}
-      <gridHelper
-        args={[Math.max(GRID_COLUMNS, GRID_ROWS) * CELL_SIZE, Math.max(GRID_COLUMNS, GRID_ROWS), '#555', '#444']}
-        position={[gridCenterX - CELL_SIZE / 2, 0, gridCenterZ - CELL_SIZE / 2]}
-      />
     </>
   );
 }
