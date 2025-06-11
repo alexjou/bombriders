@@ -1,12 +1,10 @@
 import { Canvas } from '@react-three/fiber';
 import { KeyboardControls } from '@react-three/drei';
 import * as THREE from 'three';
-import GameCanvas from '../game/components/GameCanvas';
 import GameUI from '../game/components/ui/GameUI';
-import useGameStore from '../game/store/gameStore';
+import Game from './PageGame/Game';
 
 const GamePage = () => {
-  const { gameState } = useGameStore();
 
   const keyboardMap = [
     { name: 'forward', keys: ['ArrowUp', 'KeyW'] },
@@ -47,7 +45,7 @@ const GamePage = () => {
               }}
             >
               <color attach="background" args={["#222222"]} />
-              <GameCanvas />
+              <Game />
             </Canvas>
           </div>
         </div>
