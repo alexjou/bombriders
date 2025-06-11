@@ -8,10 +8,10 @@ import GameOverScreen from './GameOverScreen';
 import LevelCompleteScreen from './LevelCompleteScreen';
 
 const GameUI = () => {
-  const { gameState, player, currentMap, setGameState, resetGame } = useGameStore();
+  const { gameState, player, setGameState, resetGame } = useGameStore();
   
   // Manipuladores de eventos
-  const handleStartGame = (character, map) => {
+  const handleStartGame = () => {
     setGameState('playing');
   };
   
