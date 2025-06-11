@@ -1,18 +1,10 @@
 import React, { useEffect, useState, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
-import Interactive3DHero from '../components/Interactive3DHero';
 
 function LandingPage() {
   const navigate = useNavigate();
-  const [scrollY, setScrollY] = useState(0);
   const [visibleSections, setVisibleSections] = useState(new Set());
   const sectionRefs = useRef({});
-
-  useEffect(() => {
-    const handleScroll = () => setScrollY(window.scrollY);
-    window.addEventListener('scroll', handleScroll);
-    return () => window.removeEventListener('scroll', handleScroll);
-  }, []);
 
   // Intersection Observer para animações de scroll
   useEffect(() => {
@@ -43,9 +35,7 @@ function LandingPage() {
   return (
     <div className="min-h-screen bg-black text-white overflow-x-hidden">
       {/* Seção Hero com Animação 3D Interativa */}
-      <section className="relative h-screen flex items-center justify-center">
-        <Interactive3DHero />
-        
+      <section className="relative h-screen flex items-center justify-center">        
         {/* Conteúdo sobreposto */}
         <div className="absolute inset-0 flex flex-col items-center justify-center z-10 pointer-events-none">
           <div className="text-center mb-8">

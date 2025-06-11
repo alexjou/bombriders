@@ -1,7 +1,7 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
 import BombLoadingScreen from './components/BombLoadingScreen';
-import ChumbiValleyLandingPage from './pages/ChumbiValleyLandingPage';
+import LandingPage from './pages/LandingPage';
 import GamePage from './pages/GamePage';
 import MultiplayerLobby from './pages/MultiplayerLobby';
 import NFTInventory from './pages/NFTInventory';
@@ -22,7 +22,7 @@ function App() {
     <Router>
       <div className="App">
         <Routes>
-          <Route path="/" element={<ChumbiValleyLandingPage />} />
+          <Route path="/" element={<LandingPage />} />
           <Route path="/multiplayer" element={<MultiplayerLobby />} />
           <Route path="/nft" element={<NFTInventory />} />
           <Route path="/game" element={<GamePage />} />

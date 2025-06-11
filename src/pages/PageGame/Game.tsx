@@ -10,6 +10,7 @@ import { CellType } from './types';
 import type { BombData, EnemyData, Grid } from './types'; // Adicionado Grid e CellType aqui
 import { findPath } from './pathfinding'; // IMPORTAR findPath
 import React from 'react';
+import useGameStore from '../../game/store/gameStore';
 // import { Canvas } from '@react-three/fiber'; // Removido - Canvas é usado no App.tsx, não aqui diretamente para <color />
 
 // Dimensões do grid conforme especificado (13x11)
@@ -35,7 +36,7 @@ const INITIAL_MAX_BOMBS = 1; // NOVO: Máximo de bombas iniciais do jogador
 const POWERUP_SPAWN_CHANCE = 0.3; // 30% de chance de um power-up aparecer
 
 // Constantes para inimigos (exemplo)
-const INITIAL_ENEMY_COUNT = 3;
+const INITIAL_ENEMY_COUNT = 5;
 const ENEMY_MOVE_INTERVAL = 1500; // Inimigos tentam se mover a cada 1.5 segundos
 
 // Novas constantes para a câmera
@@ -119,13 +120,15 @@ const processSingleBombExplosion = (
   explosionEffects: ExplosionData[];
   powerUpsToSpawn: { type: CellType; row: number; col: number }[]; // NOVO
 } => {
-  const newGrid = currentGrid.map(r => [...r]);
-  const affectedCells: { row: number; col: number }[] = [];
+  const newGrid = currentGrid.map(r => [...r]);  const affectedCells: { row: number; col: number }[] = [];
   const explosionEffects: ExplosionData[] = [];
   const powerUpsToSpawn: { type: CellType; row: number, col: number }[] = []; // NOVO
   const currentBombRange = bombToExplde.range;
 
-  // Adiciona efeito de explosão visual para a célula central da bomba (apenas visual, sem dano)
+  // Adiciona a célula central da bomba nas células afetadas para verificação de dano
+  affectedCells.push({ row: bombToExplde.row, col: bombToExplde.col });
+
+  // Adiciona efeito de explosão visual para a célula central da bomba
   explosionEffects.push({
     id: `explosion-${bombToExplde.id}-${bombToExplde.row}-${bombToExplde.col}-center-${Date.now()}-${Math.random()}`,
     position: get3DPosition(bombToExplde.col, bombToExplde.row),
@@ -262,13 +265,22 @@ export default function Game() {
   useEffect(() => {
     isGameOverRef.current = isGameOver;
   }, [isGameOver]);
-
   const gridCenterX = (GRID_COLUMNS * CELL_SIZE) / 2;
   const gridCenterZ = (GRID_ROWS * CELL_SIZE) / 2;
 
   // Calcular a posição X e Z da câmera com base nos fatores de deslocamento
   const cameraX = gridCenterX - (GRID_COLUMNS * CELL_SIZE * CAMERA_X_SHIFT_FACTOR);
   const cameraZ = gridCenterZ - (GRID_ROWS * CELL_SIZE * CAMERA_Z_SHIFT_FACTOR);
+
+  // Acessar as funções do gameStore
+  const {
+    setPlayerCharacter,
+    setPlayerPosition: updateGlobalPlayerPosition,
+    addPlayerBomb,
+    increaseBombRange,
+    setGameState,
+    removeEnemy // Função que atualiza o score ao remover inimigos
+  } = useGameStore();
 
   const get3DPosition = useCallback((col: number, row: number): [number, number, number] => {
     return [
@@ -326,9 +338,15 @@ export default function Game() {
           }
         }
       }
-    });
+    }); if (destroyedEnemyIdsThisExplosion.size > 0) {
+      // Chamar removeEnemy do gameStore para cada inimigo destruído 
+      // para incrementar a pontuação corretamente
+      destroyedEnemyIdsThisExplosion.forEach(enemyId => {
+        removeEnemy(enemyId); // Isso incrementa o score no gameStore
+        console.log(`Pontuação incrementada por destruir inimigo ${enemyId}`);
+      });
 
-    if (destroyedEnemyIdsThisExplosion.size > 0) {
+      // Atualizar o estado local dos inimigos
       setEnemies(prevEnemies => prevEnemies.filter(enemy => !destroyedEnemyIdsThisExplosion.has(enemy.id)));
     }
 
@@ -359,11 +377,16 @@ export default function Game() {
     });
 
     // 4. Processar dano ao jogador (envolvido em setTimeout para pegar a posição mais recente do jogador)
-    const damageCheckTimeoutId = window.setTimeout(() => {
-      const [pCol, pRow] = playerPositionRef.current;
+    const damageCheckTimeoutId = window.setTimeout(() => {      const [pCol, pRow] = playerPositionRef.current;
       console.log(`Verificando dano ao jogador (TIMEOUT para ${bombToExplode.id}). Posição Jogador: [${pCol}, ${pRow}]`);
       console.log("Células afetadas pela explosão (para dano ao jogador):", JSON.stringify(affectedCells));
       console.log(`Bomba que explodiu: [${bombToExplode.col}, ${bombToExplode.row}]`);
+      
+      // Verifica se o jogador está exatamente na posição da bomba
+      const playerOnBomb = pCol === bombToExplode.col && pRow === bombToExplode.row;
+      if (playerOnBomb) {
+        console.log("ALERTA: Jogador está em cima da bomba que explodiu!");
+      }
 
       if (!isPlayerInvincibleRef.current && !isGameOverRef.current) {
         const playerHit = affectedCells.some(cell => cell.row === pRow && cell.col === pCol);
@@ -432,7 +455,9 @@ export default function Game() {
     isPlayerInvincibleRef, isGameOverRef, invincibilityTimerRef, playerLivesRef,
     recentlyExplodedOrScheduledBombIdsRef, chainReactionTimeoutsRef,
     // Setters de estado (são estáveis)
-    setGrid, setExplosions, setBombs, setEnemies, setPlayerLives, setIsGameOver, setIsPlayerInvincible
+    setGrid, setExplosions, setBombs, setEnemies, setPlayerLives, setIsGameOver, setIsPlayerInvincible,
+    // Funções do gameStore
+    removeEnemy
     // Constantes como PLAYER_INVINCIBILITY_DURATION, CHAIN_REACTION_DELAY são usadas diretamente
   ]);
 
@@ -806,82 +831,42 @@ export default function Game() {
       // recentlyExplodedOrScheduledBombIdsRef.current.clear(); 
     };
   }, []);
-
+  // Acessar as funções do gameStore
+  //Removido para evitar duplicação
+  // Atualizar o estado global do jogador quando os valores locais mudarem
   useEffect(() => {
+    // Atualizando os dados do jogador no store global
+    const player = useGameStore.getState().player;    // Atualiza o player no store
+    useGameStore.setState({
+      player: {
+        ...player,
+        lives: playerLives,
+        bombRange: playerBombRange,
+        bombs: playerMaxBombs,
+        isInvincible: isPlayerInvincible
+        // o score é mantido pois é gerenciado pelo gameStore
+      }
+    });
+
+    // Verificar se todos os inimigos foram eliminados
+    if (enemies.length === 0 && !isGameOver) {
+      console.log("Todos os inimigos foram eliminados! Nível concluído!");
+      setGameState('levelComplete');
+    }
+    // Se o jogo acabar, atualize o estado do jogo
+    else if (isGameOver) {
+      setGameState('gameOver');
+    } else {
+      setGameState('playing');
+    }
+
     console.log(`Vidas: ${playerLives}, Invencível: ${isPlayerInvincible}, Game Over: ${isGameOver}`);
-  }, [playerLives, isPlayerInvincible, isGameOver]);
+  }, [playerLives, isPlayerInvincible, isGameOver, playerBombRange, playerMaxBombs]);
 
   return (
-    <>
-      {/* Cor de fundo da cena */}
-      <color attach="background" args={['#33334D']} /> {/* Azul escuro/cinza para o fundo */}
-
-      {/* UI Elements wrapped in Html */}
+    <>      {/* UI Elements wrapped in Html - Botão de reiniciar removido */}
       <Html fullscreen zIndexRange={[100, 0]}>
-        <div style={{
-          position: 'absolute',
-          left: '50%',
-          top: '120%',
-          transform: 'translateX(-50%)', // Centralizar horizontalmente
-          padding: '10px',
-          color: 'white',
-          backgroundColor: 'rgba(0, 0, 0, 0.5)',
-          borderRadius: '5px',
-          fontFamily: 'Arial, sans-serif',
-          fontSize: '24px',
-          zIndex: 101 // Para garantir que fique sobre outros elementos Html se houver
-        }}>
-          Vidas: {playerLives}
-        </div>
-        {isGameOver && (
-          <div style={{
-            position: 'absolute',
-            top: '50%',
-            left: '50%',
-            transform: 'translate(-50%, -50%)',
-            padding: '20px',
-            color: 'red',
-            backgroundColor: 'rgba(0, 0, 0, 0.7)',
-            borderRadius: '10px',
-            fontFamily: 'Arial, sans-serif',
-            fontSize: '48px',
-            textAlign: 'center',
-            zIndex: 102
-          }}>
-            GAME OVER
-            <button
-              onClick={() => {
-                // Reiniciar o estado do jogo (exemplo básico)
-                setPlayerLives(PLAYER_INITIAL_LIVES);
-                setPlayerPosition([PLAYER_START_COL, PLAYER_START_ROW]);
-                setEnemies(createInitialEnemies());
-                setGrid(createInitialGrid(initialEnemies.current));
-                setBombs([]);
-                setExplosions([]);
-                setIsGameOver(false);
-                setIsPlayerInvincible(false);
-                // RESETAR ESTADOS DOS POWER-UPS
-                setPlayerBombRange(INITIAL_BOMB_RANGE);
-                setPlayerMaxBombs(INITIAL_MAX_BOMBS);
-                if (invincibilityTimerRef.current) clearTimeout(invincibilityTimerRef.current);
-                invincibilityTimerRef.current = null;
-                recentlyExplodedOrScheduledBombIdsRef.current.clear();
-                chainReactionTimeoutsRef.current.forEach(clearTimeout);
-                chainReactionTimeoutsRef.current = [];
-                console.log("Jogo Reiniciado!");
-              }}
-              style={{
-                display: 'block',
-                marginTop: '20px',
-                padding: '10px 20px',
-                fontSize: '20px',
-                cursor: 'pointer'
-              }}
-            >
-              Reiniciar Jogo
-            </button>
-          </div>
-        )}
+        {/* O botão de GAME OVER foi removido, pois agora usamos o GameOverScreen do GameUI.jsx */}
       </Html>
 
       {/* Cena 3D */}
@@ -890,19 +875,21 @@ export default function Game() {
         zoom={35} // Este valor de zoom pode precisar de ajuste fino posteriormente
         position={[cameraX, CAMERA_ALTITUDE, cameraZ]}
         rotation={[-Math.PI / 2, 0, 0]} // Garante a visão de cima para baixo
-      />
-      <OrbitControls
+      />      <OrbitControls
         target={[cameraX, 0, cameraZ]} // Define o alvo da câmera para o ponto abaixo dela no plano do grid
         enableRotate={false} // Desabilita a rotação da câmera pelo usuário
         enablePan={true} // Permite o pan (arrastar) por enquanto. Pode ser definido como false se o grid precisar ser totalmente fixo.
       />
-      <ambientLight intensity={0.8} /> {/* Aumentar um pouco a luz ambiente */}
-      <directionalLight position={[10, 15, 10]} intensity={1.2} castShadow /> {/* Aumentar um pouco a luz direcional */}
-
-      {/* Plano de Chão Verde */}
+      {/* @ts-ignore - ambientLight é um componente válido do Three.js/React-Three-Fiber */}
+      <ambientLight intensity={0.8} />
+      {/* @ts-ignore - directionalLight é um componente válido do Three.js/React-Three-Fiber */}
+      <directionalLight intensity={1.2} castShadow />      {/* Plano de Chão Verde */}
+      {/* @ts-ignore - mesh é um componente válido do Three.js/React-Three-Fiber */}
       <mesh receiveShadow position={[gridCenterX - CELL_SIZE / 2, -0.05, gridCenterZ - CELL_SIZE / 2]} rotation={[-Math.PI / 2, 0, 0]}>
-        <planeGeometry args={[GRID_COLUMNS * CELL_SIZE * 2, GRID_ROWS * CELL_SIZE * 2]} /> {/* Plano maior */}
+        {/* @ts-ignore - planeGeometry é um componente válido do Three.js/React-Three-Fiber */}
+        <planeGeometry args={[GRID_COLUMNS * CELL_SIZE * 2, GRID_ROWS * CELL_SIZE * 2]} /> {/* Plano maior */}        {/* @ts-ignore - meshStandardMaterial é um componente válido do Three.js/React-Three-Fiber */}
         <meshStandardMaterial color="#669966" /> {/* Verde gramado */}
+        {/* @ts-ignore - mesh é um componente válido do Three.js/React-Three-Fiber */}
       </mesh>
 
       {grid.map((row, rIndex) =>
@@ -942,8 +929,7 @@ export default function Game() {
           moveSpeed={7.5} // Aumentado para 7.5 para movimento mais rápido mas ainda suave
           onMovementComplete={handlePlayerMovementComplete}
         />
-      )}
-
+      )}      {/* @ts-ignore - gridHelper é um componente válido do Three.js/React-Three-Fiber */}
       <gridHelper
         args={[Math.max(GRID_COLUMNS, GRID_ROWS) * CELL_SIZE, Math.max(GRID_COLUMNS, GRID_ROWS), '#555', '#444']}
         position={[gridCenterX - CELL_SIZE / 2, 0, gridCenterZ - CELL_SIZE / 2]}

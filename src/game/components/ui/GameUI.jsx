@@ -5,6 +5,7 @@ import MainMenu from './MainMenu';
 import GameHUD from './GameHUD';
 import PauseMenu from './PauseMenu';
 import GameOverScreen from './GameOverScreen';
+import LevelCompleteScreen from './LevelCompleteScreen';
 
 const GameUI = () => {
   const { gameState, player, currentMap, setGameState, resetGame } = useGameStore();
@@ -57,6 +58,14 @@ const GameUI = () => {
           <GameOverScreen 
             score={player.score}
             onRestart={handleRestartGame}
+          />
+        );
+      case 'levelComplete':
+        return (
+          <LevelCompleteScreen
+            score={player.score}
+            onNextLevel={handleRestartGame}
+            onMainMenu={handleRestartGame}
           />
         );
       default:

@@ -25,7 +25,7 @@ const BombLoadingScreen = ({ onLoadingComplete }) => {
 
     // Animação do pavio
     const fuseInterval = setInterval(() => {
-      setFuseProgress(prev => {
+      setFuseProgress(() => {
         const newProgress = (progress / 100) * 100;
         return newProgress;
       });
@@ -75,9 +75,9 @@ const BombLoadingScreen = ({ onLoadingComplete }) => {
       {/* Container principal */}
       {!exploded && (
         <div className="relative flex flex-col items-center">
-          {/* Pavio */}
-          <div className="relative mb-8">
-            <svg width="300" height="100" viewBox="0 0 300 100" className="overflow-visible">
+          {/* Pavio - girado 90° à direita e centralizado */}
+          <div className="relative mb-0 flex justify-center">
+            <svg width="300" height="200" viewBox="0 0 300 200" className="overflow-visible" style={{ transform: 'rotate(90deg)', transformOrigin: 'center', marginLeft: '-80px' }}>
               {/* Linha do pavio */}
               <path
                 d="M 50 80 Q 100 20 150 60 Q 200 100 250 40"
@@ -186,9 +186,6 @@ const BombLoadingScreen = ({ onLoadingComplete }) => {
               
               {/* Texto de carregamento */}
               <div className="text-center mt-4">
-                <div className="text-2xl font-bold text-white mb-2">
-                  PREPARANDO EXPLOSÃO
-                </div>
                 <div className="text-lg text-orange-400 font-mono">
                   {Math.round(progress)}%
                 </div>
