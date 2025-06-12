@@ -1,0 +1,158 @@
+/* Estilos para o jogo BombRiders */
+
+.game-container {
+  display: flex;
+  flex-direction: row;
+  height: 100vh;
+}
+
+.game-board-container {
+  flex: 3;
+  position: relative;
+  overflow: hidden;
+}
+
+.game-controls-container {
+  flex: 1;
+  padding: 20px;
+  background-color: #2a2a2a;
+  color: white;
+  box-shadow: -2px 0 10px rgba(0, 0, 0, 0.5);
+  overflow-y: auto;
+  display: flex;
+  flex-direction: column;
+}
+
+.game-controls {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+}
+
+.game-info {
+  margin-bottom: 20px;
+}
+
+.game-info h3 {
+  font-size: 1.8em;
+  margin-bottom: 15px;
+  color: #ffcc00;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+}
+
+.player-stats {
+  background-color: #333;
+  padding: 15px;
+  border-radius: 8px;
+  margin-bottom: 20px;
+}
+
+.player-stats p {
+  margin: 8px 0;
+  display: flex;
+  justify-content: space-between;
+  font-size: 0.95em;
+}
+
+.stat-value {
+  font-weight: bold;
+  color: #ffcc00;
+}
+
+.game-buttons {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  margin-bottom: 20px;
+}
+
+.control-btn {
+  padding: 12px 0;
+  font-size: 1em;
+  font-weight: bold;
+  border: none;
+  border-radius: 5px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.start-btn, .resume-btn {
+  background-color: #4CAF50;
+  color: white;
+}
+
+.start-btn:hover, .resume-btn:hover {
+  background-color: #3e8e41;
+}
+
+.pause-btn {
+  background-color: #f39c12;
+  color: white;
+}
+
+.pause-btn:hover {
+  background-color: #d68910;
+}
+
+.reset-btn {
+  background-color: #e74c3c;
+  color: white;
+}
+
+.reset-btn:hover {
+  background-color: #c0392b;
+}
+
+.game-over-message, .level-complete-message {
+  background-color: rgba(0, 0, 0, 0.8);
+  padding: 20px;
+  border-radius: 10px;
+  text-align: center;
+  margin: 20px 0;
+  animation: fadeIn 0.5s ease-in;
+}
+
+.game-over-message h2 {
+  color: #e74c3c;
+  margin-bottom: 10px;
+}
+
+.level-complete-message h2 {
+  color: #4CAF50;
+  margin-bottom: 10px;
+}
+
+.game-instructions {
+  margin-top: auto;
+  background-color: #333;
+  padding: 15px;
+  border-radius: 8px;
+}
+
+.game-instructions h4 {
+  color: #ffcc00;
+  margin-bottom: 10px;
+}
+
+.game-instructions p {
+  margin: 5px 0;
+  font-size: 0.9em;
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+/* Estilos responsivos */
+@media screen and (max-width: 768px) {
+  .game-container {
+    flex-direction: column;
+  }
+  
+  .game-controls-container {
+    flex: none;
+    height: 250px;
+  }
+}

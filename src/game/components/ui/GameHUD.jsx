@@ -1,10 +1,22 @@
+<<<<<<< Updated upstream
 import React from 'react';
+=======
+import { useState, useEffect } from 'react';
+>>>>>>> Stashed changes
 import { Button } from '@/components/ui/button.jsx';
-import { POWER_UPS } from '../../utils/constants';
+import { POWER_UPS } from '@/utils/game/game-constants';
+import EnemyProgress from './EnemyProgress';
+import { GAME_CONFIG } from '@/utils/game/grid';
 
 const GameHUD = ({ player, onPause }) => {
   return (
     <div className="fixed inset-0 pointer-events-none">
+      {/* Indicador de progresso de inimigos */}
+      <EnemyProgress 
+        currentEnemies={player.enemies || 0} 
+        totalEnemies={GAME_CONFIG.initialEnemyCount || 5} 
+      />
+      
       {/* Barra superior com informações do jogador */}
       <div className="absolute top-0 left-0 right-0 bg-black bg-opacity-50 p-2 flex justify-between items-center">
         <div className="flex items-center gap-4">

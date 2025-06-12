@@ -1,6 +1,6 @@
 import React from 'react';
 import useGameStore from '../../store/gameStore';
-import { CHARACTERS, MAPS } from '../../utils/constants';
+import { CHARACTERS, MAPS } from '@/utils/game/game-constants';
 import MainMenu from './MainMenu';
 import GameHUD from './GameHUD';
 import PauseMenu from './PauseMenu';
