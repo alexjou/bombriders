@@ -2,78 +2,67 @@ import React, { useEffect, useRef } from 'react';
 import { motion } from 'framer-motion';
 import { ParallaxProvider, ParallaxBanner } from 'react-scroll-parallax';
 import { animate, stagger } from 'animejs';
+import CharacterCard from "@/components/CharacterCard";
+import Carousel3D from "@/components/Carousel3D";
+import HeroWave from "@/components/HeroWave";
+import { useCharacterImages } from "@/hooks/useCharacterImages";
+import '@/styles/character-cards.css';
+import '@/styles/carousel-3d.css';
 
-// Imagens locais e placeholders
-const dinoBg = '/src/assets/images/game/gameplay.jpg';
-const bombRider1 = '/src/assets/images/characters/bomberman1.jpg';
-const bombRider2 = '/src/assets/images/characters/bomberman2.jpg';
-const dino1 = '/src/assets/images/nft/dino_egg1.jpg';
-const dino2 = '/src/assets/images/nft/dino_egg2.jpg';
-const galeriaImgs = [
-  'https://images.unsplash.com/photo-1506744038136-46273834b3fb?auto=format&fit=crop&w=600&q=80',
-  'https://images.unsplash.com/photo-1465101046530-73398c7f28ca?auto=format&fit=crop&w=600&q=80',
-  '/src/assets/images/game/arcade.png',
-  '/src/assets/images/game/bomb.jpg',
-  'https://images.unsplash.com/photo-1519125323398-675f0ddb6308?auto=format&fit=crop&w=600&q=80',
-  '/src/assets/images/nft/prehistoric_man.jpg',
+// O hook useCharacterImages foi movido para um arquivo separado
+
+// Constante com informações dos personagens
+const characterData = [
+  {
+    id: 'ryder',
+    name: 'Ryder Nova',
+    element: 'Fogo',
+    elementColor: 'red',
+    description: 'Piloto líder, especialista em bombas inteligentes e estratégias de ataque relâmpago. Domina o elemento do fogo.',
+    stats: { força: 85, velocidade: 75, técnica: 90 }
+  },
+  {
+    id: 'vega',
+    name: 'Vega Flux',
+    element: 'Raio',
+    elementColor: 'yellow',
+    description: 'Engenheira tática, mestre em hackear sistemas biomecânicos e despertar dinossauros lendários.',
+    stats: { força: 65, velocidade: 95, técnica: 80 }
+  },
+  {
+    id: 'tyranotron',
+    name: 'Tyranotron',
+    element: 'Terra',
+    elementColor: 'green',
+    description: 'Dinossauro tecnológico, força bruta e defesa impenetrável, aliado dos BombRiders.',
+    stats: { força: 98, velocidade: 50, técnica: 70 }
+  },
+  {
+    id: 'raptoraX',
+    name: 'RaptoraX',
+    element: 'Água',
+    elementColor: 'blue',
+    description: 'Ágil e inteligente, especialista em missões furtivas e sabotagem.',
+    stats: { força: 70, velocidade: 88, técnica: 82 }
+  },
+  {
+    id: 'aeroBlast',
+    name: 'AeroBlast',
+    element: 'Ar',
+    elementColor: 'purple',
+    description: 'Piloto aéreo, especialista em ataques verticais e bombardeio estratégico.',
+    stats: { força: 75, velocidade: 85, técnica: 78 }
+  }
 ];
-
-// Efeito de onda no Hero
-const HeroWave: React.FC = () => {
-  const canvasRef = useRef<HTMLCanvasElement>(null);
-
-  useEffect(() => {
-    const canvas = canvasRef.current;
-    if (!canvas) return;
-    const ctx = canvas.getContext('2d');
-    let width = window.innerWidth;
-    let height = 300;
-    canvas.width = width;
-    canvas.height = height;
-    let mouseX = width / 2;
-    let animationId: number;
-
-    const drawWave = () => {
-      ctx!.clearRect(0, 0, width, height);
-      ctx!.beginPath();
-      for (let x = 0; x < width; x += 2) {
-        const y = 60 * Math.sin((x + mouseX) * 0.01) + 120 + 10 * Math.sin((x + mouseX) * 0.05);
-        ctx!.lineTo(x, y);
-      }
-      ctx!.strokeStyle = 'rgba(0,255,255,0.3)';
-      ctx!.lineWidth = 3;
-      ctx!.stroke();
-    };
-
-    const animate = () => {
-      drawWave();
-      animationId = requestAnimationFrame(animate);
-    };
-    animate();
-
-    const handleMouseMove = (e: MouseEvent) => {
-      mouseX = e.clientX;
-    };
-    window.addEventListener('mousemove', handleMouseMove);
-    return () => {
-      window.removeEventListener('mousemove', handleMouseMove);
-      cancelAnimationFrame(animationId);
-    };
-  }, []);
-
-  return (
-    <canvas ref={canvasRef} className="absolute left-0 top-0 w-full h-[300px] pointer-events-none z-0" />
-  );
-};
 
 // Card Flip
 const FlipCard: React.FC<{ front: React.ReactNode; back: React.ReactNode }> = ({ front, back }) => (
-  <div className="group perspective w-64 h-80 m-4">
+  <div className="group perspective w-72 h-96 m-6">
     <div className="relative w-full h-full duration-700 transform-style-preserve-3d group-hover:rotate-y-180">
-      <div className="absolute w-full h-full backface-hidden rounded-xl overflow-hidden shadow-lg">
+      <div className="absolute w-full h-full backface-hidden rounded-xl overflow-hidden shadow-2xl border-2 border-cyan-400/30">
         {front}
       </div>
-      <div className="absolute w-full h-full rotate-y-180 backface-hidden rounded-xl overflow-hidden shadow-lg bg-gradient-to-br from-cyan-900 to-gray-900 flex flex-col items-center justify-center text-white p-4">
+      <div className="absolute w-full h-full rotate-y-180 backface-hidden rounded-xl overflow-hidden shadow-2xl bg-gradient-to-br from-cyan-900 to-gray-900 flex flex-col items-center justify-center text-white p-6 border-2 border-yellow-400/30">
         {back}
       </div>
     </div>
@@ -81,6 +70,21 @@ const FlipCard: React.FC<{ front: React.ReactNode; back: React.ReactNode }> = ({
 );
 
 const HomePage: React.FC = () => {
+  // Imagens locais e placeholders
+  const dinoBg = 'src/assets/images/game/gameplay.jpg';
+  const bombRider1 = 'src/assets/images/characters/bomberman1.jpg';
+  const bombRider2 = 'src/assets/images/characters/bomberman2.jpg';
+  const dino1 = 'src/assets/images/nft/dino_egg1.jpg';
+  const dino2 = 'src/assets/images/nft/dino_egg2.jpg';
+  const galeriaImgs = [
+    'https://images.unsplash.com/photo-1506744038136-46273834b3fb?auto=format&fit=crop&w=600&q=80',
+    'https://images.unsplash.com/photo-1465101046530-73398c7f28ca?auto=format&fit=crop&w=600&q=80',
+    'src/assets/images/game/arcade.png',
+    'src/assets/images/game/bomb.jpg',
+    'https://images.unsplash.com/photo-1519125323398-675f0ddb6308?auto=format&fit=crop&w=600&q=80',
+    'src/assets/images/nft/prehistoric_man.jpg',
+  ];
+
   // Animação de entrada do Hero
   const heroTitle = {
     hidden: { opacity: 0, y: 40 },
@@ -98,6 +102,8 @@ const HomePage: React.FC = () => {
     hidden: { opacity: 0, scale: 0.9 },
     visible: (i: number) => ({ opacity: 1, scale: 1, transition: { delay: i * 0.1, duration: 0.6 } }),
   };
+  // Usando o hook personalizado para obter as imagens dos personagens
+  const characterImages = useCharacterImages();
   // Efeito explosão CTA
   const ctaRef = useRef<HTMLDivElement>(null);
   useEffect(() => {
@@ -114,17 +120,80 @@ const HomePage: React.FC = () => {
 
   return (
     <ParallaxProvider>
-      {/* HERO SECTION */}
-      <section className="relative min-h-[90vh] flex flex-col justify-center items-center bg-gradient-to-b from-cyan-900 via-gray-900 to-black overflow-hidden">
+      {/* HERO SECTION */}      <section className="relative min-h-[90vh] flex flex-col justify-center items-center bg-gradient-to-b from-cyan-900 via-gray-900 to-black overflow-hidden">
         <HeroWave />
-        <motion.h1
-          className="z-10 text-4xl md:text-6xl font-extrabold text-cyan-300 drop-shadow-lg text-center mt-32 mb-6"
+        {/* Bomb image behind the title */}
+        <div className="absolute top-1/2 transform -translate-y-1/4 z-5 opacity-20">
+          <motion.div
+            initial={{ scale: 0.8, opacity: 0 }}
+            animate={{ scale: 1, opacity: 1 }}
+            transition={{ duration: 1.5 }}
+          >
+            <svg width="300" height="300" viewBox="0 0 200 200" className="animate-pulse">
+              <circle cx="100" cy="100" r="80" fill="#333" />
+              <circle cx="100" cy="100" r="70" fill="#222" />
+              <circle cx="100" cy="100" r="60" fill="#ff5500" className="animate-ping" style={{ animationDuration: '3s' }} />
+              <rect x="90" y="30" width="20" height="30" fill="#555" rx="5" />
+              <circle cx="100" cy="25" r="8" fill="#ff0000" className="animate-pulse" />
+            </svg>
+          </motion.div>
+        </div>
+
+        <motion.div
+          className="z-10 text-center relative"
           variants={heroTitle}
           initial="hidden"
           animate="visible"
         >
-          Entre na Era dos <span className="text-yellow-400">BombRiders</span>
-        </motion.h1>
+          <motion.h1
+            className="text-4xl md:text-7xl font-extrabold text-center mb-6"
+            style={{
+              textShadow: "0 0 10px rgba(0,255,255,0.5), 0 0 20px rgba(0,255,255,0.3)",
+            }}
+          >
+            <motion.div
+              className="mb-2"
+              animate={{
+                textShadow: ["0 0 10px rgba(0,255,255,0.5)", "0 0 20px rgba(0,255,255,0.8)", "0 0 10px rgba(0,255,255,0.5)"]
+              }}
+              transition={{ duration: 2, repeat: Infinity }}
+            >
+              Entre na Era dos
+            </motion.div>
+
+            <motion.div
+              className="relative inline-block"
+              style={{
+                textShadow: "0 0 20px rgba(255,204,0,0.8)",
+                transform: "perspective(500px) rotateX(10deg)"
+              }}
+              animate={{
+                rotateX: [10, 5, 10],
+                textShadow: ["0 0 20px rgba(255,204,0,0.5)", "0 0 30px rgba(255,204,0,0.8)", "0 0 20px rgba(255,204,0,0.5)"]
+              }}
+              transition={{ duration: 3, repeat: Infinity }}
+            >
+              <span className="bg-clip-text text-transparent bg-gradient-to-b from-yellow-300 to-yellow-600" style={{ fontSize: "120%" }}>BombRiders</span>
+
+              {/* Arco visual em SVG abaixo do texto */}
+              <svg width="100%" height="30" viewBox="0 0 200 30" className="absolute -bottom-8 left-0">
+                <path
+                  d="M 10,25 Q 100,5 190,25"
+                  stroke="url(#grad)"
+                  strokeWidth="2"
+                  fill="none"
+                />
+                <defs>
+                  <linearGradient id="grad" x1="0%" y1="0%" x2="100%" y2="0%">
+                    <stop offset="0%" stopColor="rgba(255,204,0,0.1)" />
+                    <stop offset="50%" stopColor="rgba(255,204,0,0.8)" />
+                    <stop offset="100%" stopColor="rgba(255,204,0,0.1)" />
+                  </linearGradient>
+                </defs>
+              </svg>
+            </motion.div>
+          </motion.h1>
+        </motion.div>
         <motion.p
           className="z-10 text-lg md:text-2xl text-cyan-100 text-center max-w-2xl mb-8"
           variants={sectionAnim}
@@ -167,12 +236,9 @@ const HomePage: React.FC = () => {
             Num futuro não muito distante, a Terra está à beira do colapso após décadas de guerras tecnológicas e desastres ambientais. Durante escavações, dinossauros biomecânicos adormecidos são descobertos — vestígios de uma civilização ancestral. Surge então a força rebelde BombRiders: pilotos destemidos que usam bombas inteligentes para despertar e evoluir essas criaturas, lutando para restaurar o equilíbrio do planeta e impedir a extinção da humanidade.
           </p>
         </motion.div>
-      </ParallaxBanner>
-
-      {/* PERSONAGENS PRINCIPAIS */}
-      <section className="py-20 bg-gradient-to-b from-gray-900 to-cyan-950 flex flex-col items-center">
+      </ParallaxBanner>      {/* PERSONAGENS PRINCIPAIS */}      <section className="py-20 bg-gradient-to-b from-gray-900 to-cyan-950 flex flex-col items-center">
         <motion.h2
-          className="text-3xl md:text-4xl font-bold text-yellow-400 mb-10"
+          className="text-3xl md:text-4xl font-bold text-yellow-400 mb-20"
           variants={sectionAnim}
           initial="hidden"
           whileInView="visible"
@@ -180,23 +246,20 @@ const HomePage: React.FC = () => {
         >
           Personagens Principais
         </motion.h2>
-        <div className="flex flex-wrap justify-center gap-8">
-          <FlipCard
-            front={<img src={bombRider1} alt="BombRider 1" className="w-full h-full object-cover" />}
-            back={<div><h3 className="text-xl font-bold mb-2">Ryder Nova</h3><p>Piloto líder, especialista em bombas inteligentes e estratégias de ataque relâmpago.</p></div>}
-          />
-          <FlipCard
-            front={<img src={bombRider2} alt="BombRider 2" className="w-full h-full object-cover" />}
-            back={<div><h3 className="text-xl font-bold mb-2">Vega Flux</h3><p>Engenheira tática, mestre em hackear sistemas biomecânicos e despertar dinossauros lendários.</p></div>}
-          />
-          <FlipCard
-            front={<img src={dino1} alt="Dino 1" className="w-full h-full object-cover" />}
-            back={<div><h3 className="text-xl font-bold mb-2">Tyranotron</h3><p>Dinossauro tecnológico, força bruta e defesa impenetrável, aliado dos BombRiders.</p></div>}
-          />
-          <FlipCard
-            front={<img src={dino2} alt="Dino 2" className="w-full h-full object-cover" />}
-            back={<div><h3 className="text-xl font-bold mb-2">RaptoraX</h3><p>Ágil e inteligente, especialista em missões furtivas e sabotagem.</p></div>}
-          />
+        {/* Carrossel 3D de Personagens */}
+        <div className="container px-4 sm:px-8 mx-auto">
+          <div className="relative mb-16">
+            <Carousel3D autoRotate={true} rotationInterval={4000}>
+              {characterData.map((character) => (
+                <div key={character.id} className="p-2 transform-gpu">
+                  <CharacterCard
+                    character={character}
+                    imageSrc={characterImages[character.id]}
+                  />
+                </div>
+              ))}
+            </Carousel3D>
+          </div>
         </div>
       </section>
 
@@ -257,16 +320,6 @@ const HomePage: React.FC = () => {
           <a href="#" className="text-cyan-200 hover:text-yellow-400 text-2xl transition"><i className="fab fa-twitter" /> Twitter</a>
           <a href="#" className="text-cyan-200 hover:text-yellow-400 text-2xl transition"><i className="fab fa-twitch" /> Twitch</a>
         </div>
-      </section>
-
-      {/* SUGESTÃO DE TEMPLATES VISUAIS */}
-      <section className="py-10 bg-black text-cyan-200 text-center">
-        <h3 className="text-xl font-bold mb-2">Inspire-se em templates visuais modernos:</h3>
-        <ul className="flex flex-wrap justify-center gap-6 text-cyan-400 underline">
-          <li><a href="https://github.com/denniskigen/animated-portfolio" target="_blank" rel="noopener noreferrer">Animated Portfolio (Dennis Kigen)</a></li>
-          <li><a href="https://github.com/TimurKiyivinski/portfolio" target="_blank" rel="noopener noreferrer">Futuristic Portfolio (TimurKiyivinski)</a></li>
-          <li><a href="https://github.com/ixartz/Next-js-Boilerplate" target="_blank" rel="noopener noreferrer">Next.js Futuristic Boilerplate</a></li>
-        </ul>
       </section>
 
       {/* FOOTER */}
