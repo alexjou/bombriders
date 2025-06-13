@@ -214,9 +214,7 @@ const HomePage: React.FC = () => {
           <div className="absolute left-1/4 top-1/3 w-32 h-32 rounded-full bg-cyan-400 opacity-20 blur-2xl animate-pulse" />
           <div className="absolute right-1/4 bottom-1/4 w-40 h-40 rounded-full bg-yellow-400 opacity-10 blur-2xl animate-pulse" />
         </div>
-      </section>
-
-      {/* LORE / HISTÓRIA */}
+      </section>      {/* LORE / HISTÓRIA */}
       <ParallaxBanner
         layers={[
           { image: dinoBg, speed: -20 },
@@ -225,18 +223,107 @@ const HomePage: React.FC = () => {
         className="relative min-h-[60vh] flex items-center justify-center"
       >
         <motion.div
-          className="relative z-10 max-w-3xl mx-auto p-8 bg-black/60 rounded-xl shadow-xl backdrop-blur-md"
+          className="relative z-10 max-w-4xl mx-auto p-8 bg-black/60 rounded-xl shadow-xl backdrop-blur-md"
           variants={sectionAnim}
           initial="hidden"
           whileInView="visible"
           viewport={{ once: true }}
         >
-          <h2 className="text-3xl md:text-4xl font-bold text-cyan-200 mb-4">A História</h2>
-          <p className="text-cyan-100 text-lg md:text-xl">
-            Num futuro não muito distante, a Terra está à beira do colapso após décadas de guerras tecnológicas e desastres ambientais. Durante escavações, dinossauros biomecânicos adormecidos são descobertos — vestígios de uma civilização ancestral. Surge então a força rebelde BombRiders: pilotos destemidos que usam bombas inteligentes para despertar e evoluir essas criaturas, lutando para restaurar o equilíbrio do planeta e impedir a extinção da humanidade.
-          </p>
+          <h2 className="text-3xl md:text-4xl font-bold text-cyan-200 mb-4 flex items-center">
+            <div className="mr-3 text-yellow-400">
+              <svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" fill="currentColor" viewBox="0 0 16 16">
+                <path d="M12.136.326A1.5 1.5 0 0 1 14 1.78V3h.5A1.5 1.5 0 0 1 16 4.5v9a1.5 1.5 0 0 1-1.5 1.5h-13A1.5 1.5 0 0 1 0 13.5v-9a1.5 1.5 0 0 1 1.432-1.499L12.136.326zM5.562 3H13V1.78a.5.5 0 0 0-.621-.484L5.562 3zM1.5 4a.5.5 0 0 0-.5.5v9a.5.5 0 0 0 .5.5h13a.5.5 0 0 0 .5-.5v-9a.5.5 0 0 0-.5-.5h-13z" />
+              </svg>
+            </div>
+            A História
+          </h2>
+
+          <div className="space-y-8">
+            <div className="flex flex-col md:flex-row gap-6 items-center">
+              <div className="md:w-1/2">
+                <p className="text-cyan-100 text-lg">
+                  Num futuro não muito distante, a Terra está à beira do colapso após décadas de guerras tecnológicas e desastres ambientais. Durante escavações, dinossauros biomecânicos adormecidos são descobertos — vestígios de uma civilização ancestral.
+                </p>
+              </div>
+              <div className="md:w-1/2 rounded-xl overflow-hidden shadow-glow">
+                <motion.img
+                  src="src/assets/images/nft/prehistoric_man.jpg"
+                  alt="Escavações arqueológicas"
+                  className="w-full h-auto"
+                  initial={{ opacity: 0, y: 20 }}
+                  whileInView={{ opacity: 1, y: 0 }}
+                  transition={{ delay: 0.3, duration: 0.8 }}
+                  viewport={{ once: true }}
+                />
+              </div>
+            </div>
+
+            <motion.div
+              className="bg-gradient-to-r from-cyan-900/30 to-yellow-900/30 p-5 rounded-xl border border-cyan-500/20"
+              initial={{ opacity: 0, y: 20 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              transition={{ delay: 0.4, duration: 0.8 }}
+              viewport={{ once: true }}
+            >
+              <h3 className="text-xl text-yellow-300 mb-2">A Blockchain Elemental</h3>
+              <p className="text-cyan-100">
+                Após a liberação da "Blockchain Elemental", o mundo mergulhou no caos. Essa tecnologia ancestral dividiu os poderes da natureza em cinco elementos: Fogo, Raio, Terra, Água e Ar. Organizações malignas tentam dominar esses fragmentos para controlar o planeta.
+              </p>
+            </motion.div>
+
+            <div className="flex flex-col md:flex-row-reverse gap-6 items-center">
+              <div className="md:w-1/2">
+                <p className="text-cyan-100 text-lg">
+                  Os BombRiders são heróis ligados aos elementos naturais, escolhidos para restaurar o equilíbrio. Utilizando bombas tecnológicas avançadas, eles despertam e formam alianças com os dinossauros biomecânicos, criando um vínculo elementar que amplifica seus poderes.
+                </p>
+              </div>
+              <div className="md:w-1/2 rounded-xl overflow-hidden shadow-glow">
+                <motion.img
+                  src="src/assets/images/game/bomb.jpg"
+                  alt="Tecnologia BombRider"
+                  className="w-full h-auto"
+                  initial={{ opacity: 0, y: 20 }}
+                  whileInView={{ opacity: 1, y: 0 }}
+                  transition={{ delay: 0.5, duration: 0.8 }}
+                  viewport={{ once: true }}
+                />
+              </div>
+            </div>
+
+            <motion.div
+              className="grid grid-cols-2 md:grid-cols-5 gap-4 my-6"
+              initial={{ opacity: 0 }}
+              whileInView={{ opacity: 1 }}
+              transition={{ delay: 0.6, duration: 0.8 }}
+              viewport={{ once: true }}
+            >
+              {["Fogo", "Raio", "Terra", "Água", "Ar"].map((elemento, idx) => (
+                <div
+                  key={elemento}
+                  className={`p-3 rounded-lg text-center ${elemento === 'Fogo' ? 'bg-red-900/40 border-red-500/50' :
+                    elemento === 'Raio' ? 'bg-yellow-900/40 border-yellow-500/50' :
+                      elemento === 'Terra' ? 'bg-green-900/40 border-green-500/50' :
+                        elemento === 'Água' ? 'bg-blue-900/40 border-blue-500/50' :
+                          'bg-purple-900/40 border-purple-500/50'
+                    } border`}
+                >
+                  <div className="text-lg font-bold mb-1">{elemento}</div>
+                  <motion.img
+                    src={`src/assets/images/nft/dino_egg${idx + 1}.jpg`}
+                    alt={`Ovo de dinossauro do elemento ${elemento}`}
+                    className="w-full h-auto rounded-md"
+                    whileHover={{ scale: 1.05 }}
+                  />
+                </div>
+              ))}
+            </motion.div>
+
+            <p className="text-cyan-100 text-lg border-l-4 border-yellow-400 pl-4">
+              Os BombRiders agora avançam pelo Brasil, o primeiro capítulo da sua jornada global. Da Patagônia Verdejante até o Domínio Tecnossauro, enfrentando inimigos e descobrindo segredos enquanto buscam restaurar o equilíbrio do planeta e impedir a extinção da humanidade.
+            </p>
+          </div>
         </motion.div>
-      </ParallaxBanner>      {/* PERSONAGENS PRINCIPAIS */}      <section className="py-20 bg-gradient-to-b from-gray-900 to-cyan-950 flex flex-col items-center">
+      </ParallaxBanner>{/* PERSONAGENS PRINCIPAIS */}      <section className="py-20 bg-gradient-to-b from-gray-900 to-cyan-950 flex flex-col items-center">
         <motion.h2
           className="text-3xl md:text-4xl font-bold text-yellow-400 mb-20"
           variants={sectionAnim}
@@ -263,31 +350,670 @@ const HomePage: React.FC = () => {
         </div>
       </section>
 
-      {/* GALERIA DO MUNDO */}
-      <section className="py-20 bg-gradient-to-b from-cyan-950 to-black">
+      {/* MAPAS E FASES */}
+      <section className="py-20 bg-gradient-to-b from-cyan-950 to-gray-900 flex flex-col items-center">
         <motion.h2
-          className="text-3xl md:text-4xl font-bold text-cyan-300 mb-10 text-center"
+          className="text-3xl md:text-4xl font-bold text-yellow-400 mb-10 text-center"
           variants={sectionAnim}
           initial="hidden"
           whileInView="visible"
           viewport={{ once: true }}
         >
-          Galeria do Mundo
+          Capítulo 1: Brasil
         </motion.h2>
-        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-8 max-w-5xl mx-auto">
-          {galeriaImgs.map((img, i) => (
+
+        <motion.div
+          className="container max-w-5xl mx-auto px-4 sm:px-8"
+          variants={sectionAnim}
+          initial="hidden"
+          whileInView="visible"
+          viewport={{ once: true }}
+        >
+          <div className="mb-10 text-center">
+            <p className="text-cyan-100 text-xl max-w-3xl mx-auto">
+              Comece sua jornada pelo Brasil, onde a tecnologia ancestral dos dinossauros
+              primeiro despertou. Enfrente 10 fases desafiadoras em cenários emblemáticos do país.
+            </p>
+          </div>
+
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-12">
             <motion.div
-              key={img}
-              className="rounded-xl overflow-hidden shadow-lg hover:scale-105 transition-transform duration-300"
-              custom={i}
-              variants={galleryAnim}
+              className="bg-black/40 backdrop-blur-sm rounded-xl overflow-hidden border border-cyan-500/20"
+              whileHover={{ y: -5, boxShadow: "0 10px 25px -5px rgba(6, 182, 212, 0.3)" }}
+              transition={{ duration: 0.2 }}
+            >
+              <div className="h-40 overflow-hidden relative">
+                <div className="absolute inset-0 bg-gradient-to-t from-black to-transparent z-10" />
+                <img src="src/assets/images/game/gameplay.jpg" className="w-full h-full object-cover" alt="Fase do jogo" />
+                <div className="absolute bottom-0 left-0 w-full p-4 z-20">
+                  <span className="inline-block bg-red-500/70 text-white text-xs px-2 py-1 rounded mb-2">Fase 1</span>
+                  <h3 className="text-white text-xl font-bold">Patagônia Verdejante</h3>
+                </div>
+              </div>
+              <div className="p-4">
+                <p className="text-cyan-100 text-sm">
+                  Uma área com vastos campos verdejantes misturados com tecnologia
+                  ancestral. Abriga os primeiros ovos tecnossauros e possui quebra-cabeças simples.
+                </p>
+              </div>
+            </motion.div>
+
+            <motion.div
+              className="bg-black/40 backdrop-blur-sm rounded-xl overflow-hidden border border-cyan-500/20"
+              whileHover={{ y: -5, boxShadow: "0 10px 25px -5px rgba(255, 204, 0, 0.3)" }}
+              transition={{ duration: 0.2 }}
+            >
+              <div className="h-40 overflow-hidden relative">
+                <div className="absolute inset-0 bg-gradient-to-t from-black to-transparent z-10" />
+                <img src="src/assets/images/game/arcade.png" className="w-full h-full object-cover" alt="Fase do jogo" />
+                <div className="absolute bottom-0 left-0 w-full p-4 z-20">
+                  <span className="inline-block bg-yellow-500/70 text-white text-xs px-2 py-1 rounded mb-2">Fase 2</span>
+                  <h3 className="text-white text-xl font-bold">Dunas do Ceará</h3>
+                </div>
+              </div>
+              <div className="p-4">
+                <p className="text-cyan-100 text-sm">
+                  Labirinto de dunas douradas com tecnologia enterrada. Dinossauros do elemento Raio
+                  estão despertando, trazendo tempestades de areia que mudam o cenário.
+                </p>
+              </div>
+            </motion.div>
+          </div>
+
+          <div className="relative bg-black/60 rounded-xl overflow-hidden backdrop-blur-sm p-6 border border-cyan-500/20 mb-8">
+            <div className="absolute top-0 right-0 w-40 h-40 bg-cyan-500/10 rounded-full blur-3xl -translate-y-1/2 translate-x-1/3"></div>
+            <div className="absolute bottom-0 left-0 w-40 h-40 bg-yellow-500/10 rounded-full blur-3xl translate-y-1/2 -translate-x-1/3"></div>
+
+            {/* Marca d'água decorativa */}
+            <div className="absolute right-6 bottom-10 opacity-5 pointer-events-none" style={{ zIndex: 0 }}>
+              <svg width="180" height="180" viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
+                <circle cx="50" cy="50" r="40" fill="none" stroke="#FACC15" strokeWidth="2" />
+                <circle cx="50" cy="50" r="35" fill="none" stroke="#FACC15" strokeWidth="1" />
+                <path d="M50,10 L50,90 M10,50 L90,50" stroke="#FACC15" strokeWidth="1" />
+                <circle cx="50" cy="50" r="10" fill="#FACC15" opacity="0.5" />
+                <text x="30" y="55" fill="#FACC15" fontFamily="Arial" fontSize="8">BRASIL</text>
+              </svg>
+            </div>
+
+            <h3 className="text-xl text-yellow-300 font-bold mb-4 relative z-10 flex items-center">
+              <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" fill="currentColor" className="mr-2" viewBox="0 0 16 16">
+                <path d="M8 16A8 8 0 1 0 8 0a8 8 0 0 0 0 16zm.25-11.25v1.5a.75.75 0 0 1-1.5 0v-1.5a.75.75 0 0 1 1.5 0zm0 4v4.25a.75.75 0 0 1-1.5 0v-4.25a.75.75 0 0 1 1.5 0z" />
+              </svg>
+              Mapa de Progresso
+              <motion.span
+                className="ml-2 text-xs bg-yellow-400/80 text-gray-900 px-2 py-0.5 rounded-full"
+                animate={{ scale: [1, 1.05, 1] }}
+                transition={{ duration: 2, repeat: Infinity }}
+              >
+                10 FASES
+              </motion.span>
+            </h3>
+
+            <div className="relative z-10">
+              {/* Linha de conexão animada que percorre o mapa */}
+              <div className="absolute left-4 top-8 bottom-8 w-0.5 bg-gradient-to-b from-yellow-500/50 via-cyan-400/50 to-gray-700/50" style={{ zIndex: -1 }}>
+                <motion.div
+                  className="absolute top-0 w-full bg-yellow-400"
+                  initial={{ height: "0%" }}
+                  animate={{ height: ["0%", "100%", "0%"] }}
+                  transition={{ duration: 8, repeat: Infinity, repeatType: "reverse" }}
+                />
+              </div>
+
+              <div className="space-y-4">
+                {[
+                  {
+                    nome: "Patagônia Verdejante",
+                    status: "atual",
+                    desc: "Campos verdejantes com tecnologia ancestral. Os primeiros ovos tecnossauros podem ser encontrados aqui junto com quebra-cabeças simples para introduzir os jogadores à mecânica."
+                  },
+                  {
+                    nome: "Dunas do Ceará",
+                    status: "próxima",
+                    desc: "Um labirinto de dunas douradas onde tecnologia enterrada espera para ser descoberta. Dinossauros do elemento Raio estão despertando, criando tempestades de areia que mudam constantemente o cenário."
+                  },
+                  {
+                    nome: "Favela do Fogo",
+                    status: "bloqueada",
+                    desc: "Uma comunidade verticalmente construída com rampas e plataformas. O calor dos processadores de dados aquece toda a região e desperta dinossauros do elemento Fogo."
+                  },
+                  {
+                    nome: "Floresta Amazônica Digital",
+                    status: "bloqueada",
+                    desc: "Árvores e plantas interligadas por cabos de fibra ótica e servidores antigos. Os dinossauros aqui são do elemento Terra e podem controlar a vegetação tecnológica."
+                  },
+                  {
+                    nome: "Vale da Energia Perdida",
+                    status: "bloqueada",
+                    desc: "Cânion profundo com geradores de energia antigos. Dinossauros do elemento Água usam as correntes de rios subterrâneos para alimentar os geradores."
+                  },
+                  {
+                    nome: "Pantanal Codificado",
+                    status: "bloqueada",
+                    desc: "Área alagada com plataformas flutuantes. A água contém nanobots que formam padrões geométricos na superfície, revelando caminhos secretos."
+                  },
+                  {
+                    nome: "Sertão Seco",
+                    status: "bloqueada",
+                    desc: "Região árida com torres de transmissão antigas. Tempestades de areia intermitentes mudam a visibilidade e a jogabilidade, revelando ruínas tecnológicas."
+                  },
+                  {
+                    nome: "Amazônia Profunda",
+                    status: "bloqueada",
+                    desc: "Coração da floresta com estruturas ancestrais gigantes. Dinossauros de elementos mistos protegem o núcleo energético primordial."
+                  },
+                  {
+                    nome: "Mini Boss - Jaguar de Dados",
+                    status: "bloqueada",
+                    desc: "Uma arena circular com plataformas móveis onde o guardião felino da rede brasileira desafia os jogadores. Ele pode se materializar e desmaterializar como streams de dados."
+                  },
+                  {
+                    nome: "Boss Final - Domínio Tecnossauro",
+                    status: "bloqueada",
+                    desc: "Complexo tecnológico colossal com múltiplos andares. O Tirano-Servidor, um T-Rex tecnológico gigante que controla todos os dados do Brasil, deve ser derrotado ou convertido para a causa dos BombRiders."
+                  }
+                ].map((fase, i) => (
+                  <div
+                    key={fase.nome}
+                    className={`flex items-start p-3 rounded-lg transition-all ${fase.status === "atual"
+                        ? "bg-gradient-to-r from-yellow-500/30 to-yellow-900/10 border border-yellow-500/40"
+                        : fase.status === "próxima"
+                          ? "bg-gradient-to-r from-cyan-500/20 to-cyan-900/10 border border-cyan-500/30"
+                          : "bg-gradient-to-r from-gray-700/20 to-gray-900/10 border border-gray-600/20"
+                      }`}
+                  >
+                    <div className={`rounded-full w-8 h-8 flex items-center justify-center text-xs font-bold mr-3 flex-shrink-0 ${fase.status === "atual"
+                        ? "bg-yellow-400 text-gray-900"
+                        : fase.status === "próxima"
+                          ? "bg-cyan-400 text-gray-900"
+                          : "bg-gray-700 text-gray-300"
+                      }`}>
+                      {i + 1}
+                    </div>
+                    <div>
+                      <h4 className={`font-bold text-base mb-1 ${fase.status === "atual"
+                          ? "text-yellow-300"
+                          : fase.status === "próxima"
+                            ? "text-cyan-300"
+                            : "text-gray-300"
+                        }`}>
+                        {fase.nome}
+                        {fase.status === "atual" && (
+                          <span className="ml-2 text-xs bg-yellow-400 text-gray-900 px-2 py-0.5 rounded-full">ATUAL</span>
+                        )}
+                      </h4>
+                      <p className="text-cyan-100 text-sm">{fase.desc}</p>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
+
+            {/* Indicador de progresso numérico */}
+            <motion.div
+              className="mt-6 bg-black/40 backdrop-blur-sm p-4 rounded-lg border border-yellow-500/20 flex items-center justify-center"
+              initial={{ opacity: 0, y: 20 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              transition={{ delay: 0.5, duration: 0.5 }}
+              viewport={{ once: true }}
+            >
+              <div className="flex flex-col items-center mr-6">
+                <div className="text-2xl font-bold text-yellow-300">1/10</div>
+                <div className="text-xs text-cyan-200">Fase atual</div>
+              </div>
+
+              <div className="w-full max-w-xs">
+                <div className="h-2 w-full bg-gray-800 rounded-full overflow-hidden">
+                  <motion.div
+                    className="h-full bg-gradient-to-r from-yellow-400 to-cyan-400"
+                    style={{ width: "10%" }}
+                    animate={{ boxShadow: ["0 0 5px rgba(255, 204, 0, 0.7)", "0 0 10px rgba(255, 204, 0, 0.9)", "0 0 5px rgba(255, 204, 0, 0.7)"] }}
+                    transition={{ duration: 2, repeat: Infinity }}
+                  />
+                </div>
+                <div className="mt-1 text-xs text-cyan-200 text-right">10% completado</div>
+              </div>
+            </motion.div>
+
+            <motion.div
+              className="mt-6 bg-gradient-to-r from-cyan-900/30 to-yellow-900/30 p-4 rounded-lg text-center max-w-lg mx-auto"
+              animate={{
+                boxShadow: ["0 0 10px rgba(6, 182, 212, 0.3)", "0 0 20px rgba(6, 182, 212, 0.5)", "0 0 10px rgba(6, 182, 212, 0.3)"]
+              }}
+              transition={{ duration: 3, repeat: Infinity }}
+            >
+              <p className="text-cyan-100">
+                <span className="text-yellow-300 font-bold">Em breve:</span> Próximos capítulos em outros países, cada um com suas fases exclusivas!
+              </p>
+            </motion.div>
+
+            {/* Dicas de jogo para as fases */}
+            <motion.div
+              className="mt-6 bg-black/50 backdrop-blur-sm p-4 rounded-lg border border-cyan-500/20"
+              initial={{ opacity: 0, y: 20 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              transition={{ delay: 0.6, duration: 0.5 }}
+              viewport={{ once: true }}
+            >
+              <h4 className="text-lg text-cyan-300 font-semibold mb-3 flex items-center">
+                <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" fill="currentColor" className="mr-2" viewBox="0 0 16 16">
+                  <path d="M8 15A7 7 0 1 1 8 1a7 7 0 0 1 0 14zm0 1A8 8 0 1 0 8 0a8 8 0 0 0 0 16z" />
+                  <path d="m8.93 6.588-2.29.287-.082.38.45.083c.294.07.352.176.288.469l-.738 3.468c-.194.897.105 1.319.808 1.319.545 0 1.178-.252 1.465-.598l.088-.416c-.2.176-.492.246-.686.246-.275 0-.375-.193-.304-.533L8.93 6.588zM9 4.5a1 1 0 1 1-2 0 1 1 0 0 1 2 0z" />
+                </svg>
+                Dica para Patagônia Verdejante
+              </h4>
+
+              <div className="pl-7">
+                <p className="text-cyan-100 text-sm mb-2">
+                  Para encontrar ovos ocultos nesta fase, busque áreas com vegetação brilhante.
+                  Use bombas do elemento fogo perto de cristais para revelar passagens secretas.
+                </p>
+
+                <div className="mt-3 flex flex-wrap gap-2">
+                  <span className="inline-block bg-yellow-900/40 border border-yellow-500/30 text-yellow-300 text-xs px-2 py-1 rounded-full">
+                    # Cristais
+                  </span>
+                  <span className="inline-block bg-red-900/40 border border-red-500/30 text-red-300 text-xs px-2 py-1 rounded-full">
+                    # Bombas de Fogo
+                  </span>
+                  <span className="inline-block bg-green-900/40 border border-green-500/30 text-green-300 text-xs px-2 py-1 rounded-full">
+                    # Ovos Elementais
+                  </span>
+                </div>
+              </div>
+            </motion.div>
+          </div>
+        </motion.div>
+      </section>
+
+      {/* PETS E EVOLUÇÃO */}
+      <section className="py-20 bg-gradient-to-b from-gray-900 to-black flex flex-col items-center overflow-hidden relative">
+        {/* Efeito de partículas flutuantes */}
+        <div className="absolute inset-0 pointer-events-none">
+          {Array.from({ length: 20 }).map((_, i) => (
+            <motion.div
+              key={`particle-${i}`}
+              className="absolute rounded-full bg-cyan-400/20"
+              style={{
+                width: Math.random() * 20 + 5,
+                height: Math.random() * 20 + 5,
+                left: `${Math.random() * 100}%`,
+                top: `${Math.random() * 100}%`,
+              }}
+              animate={{
+                y: [0, -100],
+                opacity: [0, 0.7, 0],
+              }}
+              transition={{
+                duration: Math.random() * 8 + 12,
+                repeat: Infinity,
+                delay: Math.random() * 5,
+              }}
+            />
+          ))}
+        </div>
+
+        <motion.h2
+          className="text-3xl md:text-4xl font-bold text-yellow-400 mb-10 text-center"
+          variants={sectionAnim}
+          initial="hidden"
+          whileInView="visible"
+          viewport={{ once: true }}
+        >
+          Pets Dinossauros e Evolução
+        </motion.h2>
+
+        <motion.div
+          className="container max-w-6xl mx-auto px-4 sm:px-8"
+          variants={sectionAnim}
+          initial="hidden"
+          whileInView="visible"
+          viewport={{ once: true }}
+        >
+          <div className="text-center mb-8">
+            <p className="text-cyan-100 text-xl max-w-3xl mx-auto">
+              Cada BombRider tem um pet dinossauro tecnológico que evolui conforme o progresso no jogo,
+              ganhando novos poderes e habilidades.
+            </p>
+          </div>
+
+          <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+            <motion.div
+              className="bg-black/40 backdrop-blur-sm rounded-xl overflow-hidden border border-cyan-500/20"
+              whileHover={{ y: -5, boxShadow: "0 10px 25px -5px rgba(6, 182, 212, 0.3)" }}
+              transition={{ duration: 0.2 }}
+            >
+              <div className="p-5 border-b border-cyan-500/20 bg-gradient-to-r from-black/80 to-cyan-900/20">
+                <h3 className="text-xl text-cyan-300 font-bold">Ovos Elementais</h3>
+              </div>
+              <div className="p-5 flex flex-col items-center">
+                <div className="relative w-40 h-40 mb-6">
+                  <motion.img
+                    src="src/assets/images/nft/dino_egg1.jpg"
+                    alt="Ovo Elemental"
+                    className="rounded-lg w-full h-full object-cover border-2 border-cyan-500/30"
+                    animate={{
+                      boxShadow: ["0 0 10px rgba(6, 182, 212, 0.3)", "0 0 20px rgba(6, 182, 212, 0.5)", "0 0 10px rgba(6, 182, 212, 0.3)"]
+                    }}
+                    transition={{ duration: 3, repeat: Infinity }}
+                  />
+                  <div className="absolute -bottom-3 -right-3 bg-yellow-400 text-black rounded-full p-2 font-bold text-xs">
+                    NÍVEL 1
+                  </div>
+                </div>
+                <p className="text-cyan-100 text-sm">
+                  Sua jornada começa encontrando um ovo misterioso. Ele contém um dinossauro tecnológico
+                  que responderá ao seu elemento natural. Os ovos são raros e podem ser encontrados durante missões especiais.
+                </p>
+                <div className="mt-4 flex justify-center">
+                  <span className="inline-block bg-cyan-900/50 text-cyan-300 text-xs px-3 py-1 rounded-full">
+                    Habilidade Inicial: Suporte Básico
+                  </span>
+                </div>
+              </div>
+            </motion.div>
+
+            <motion.div
+              className="bg-black/40 backdrop-blur-sm rounded-xl overflow-hidden border border-yellow-500/20"
+              whileHover={{ y: -5, boxShadow: "0 10px 25px -5px rgba(255, 204, 0, 0.3)" }}
+              transition={{ duration: 0.2 }}
+            >
+              <div className="p-5 border-b border-yellow-500/20 bg-gradient-to-r from-black/80 to-yellow-900/20">
+                <h3 className="text-xl text-yellow-300 font-bold">Evolução Intermediária</h3>
+              </div>
+              <div className="p-5 flex flex-col items-center">
+                <div className="relative w-40 h-40 mb-6">
+                  <motion.img
+                    src="src/assets/images/nft/dino_egg3.jpg"
+                    alt="Dinossauro Evoluído"
+                    className="rounded-lg w-full h-full object-cover border-2 border-yellow-500/30"
+                    animate={{
+                      boxShadow: ["0 0 10px rgba(255, 204, 0, 0.3)", "0 0 20px rgba(255, 204, 0, 0.5)", "0 0 10px rgba(255, 204, 0, 0.3)"]
+                    }}
+                    transition={{ duration: 3, repeat: Infinity }}
+                  />
+                  <div className="absolute -bottom-3 -right-3 bg-yellow-400 text-black rounded-full p-2 font-bold text-xs">
+                    NÍVEL 2
+                  </div>
+                </div>
+                <p className="text-cyan-100 text-sm">
+                  Após batalhas e uso frequente, seu pet evolui para uma forma mais forte e ágil.
+                  A evolução pode ser acelerada com tokens especiais ou completando desafios específicos.
+                </p>
+                <div className="mt-4 flex justify-center">
+                  <span className="inline-block bg-yellow-900/50 text-yellow-300 text-xs px-3 py-1 rounded-full">
+                    Habilidade Desbloqueada: Ataque Elemental
+                  </span>
+                </div>
+              </div>
+            </motion.div>
+
+            <motion.div
+              className="bg-black/40 backdrop-blur-sm rounded-xl overflow-hidden border border-purple-500/20"
+              whileHover={{ y: -5, boxShadow: "0 10px 25px -5px rgba(168, 85, 247, 0.3)" }}
+              transition={{ duration: 0.2 }}
+            >
+              <div className="p-5 border-b border-purple-500/20 bg-gradient-to-r from-black/80 to-purple-900/20">
+                <h3 className="text-xl text-purple-300 font-bold mb-4">Forma Final NFT</h3>
+              </div>
+              <div className="p-5 flex flex-col items-center">
+                <div className="relative w-40 h-40 mb-6">
+                  <motion.img
+                    src="src/assets/images/nft/dino_egg7.jpg"
+                    alt="Dinossauro Forma Final"
+                    className="rounded-lg w-full h-full object-cover border-2 border-purple-500/30"
+                    animate={{
+                      boxShadow: ["0 0 10px rgba(168, 85, 247, 0.3)", "0 0 20px rgba(168, 85, 247, 0.5)", "0 0 10px rgba(168, 85, 247, 0.3)"]
+                    }}
+                    transition={{ duration: 3, repeat: Infinity }}
+                  />
+                  <div className="absolute -bottom-3 -right-3 bg-purple-400 text-black rounded-full p-2 font-bold text-xs">
+                    NÍVEL 3
+                  </div>
+                </div>
+                <p className="text-cyan-100 text-sm">
+                  A forma final representa o máximo potencial do seu dinossauro. Neste estágio,
+                  você pode transformá-lo em um NFT único para coleção ou negociação no marketplace.
+                </p>
+                <div className="mt-4 flex justify-center">
+                  <span className="inline-block bg-purple-900/50 text-purple-300 text-xs px-3 py-1 rounded-full">
+                    Habilidade Desbloqueada: Fusão Elemental
+                  </span>
+                </div>
+              </div>
+            </motion.div>
+          </div>
+
+          <div className="mt-12 bg-gradient-to-r from-gray-900 to-black p-6 rounded-xl border border-yellow-500/20 max-w-4xl mx-auto">
+            <div className="flex flex-col md:flex-row gap-6 items-center">
+              <div className="md:w-1/3">
+                <motion.img
+                  src="src/assets/images/nft/dino_egg5.jpg"
+                  alt="NFT Dinossauro"
+                  className="rounded-lg w-full object-cover shadow-glow border-2 border-yellow-500/20"
+                  whileHover={{ scale: 1.05 }}
+                  transition={{ duration: 0.2 }}
+                />
+              </div>
+              <div className="md:w-2/3">
+                <h3 className="text-xl text-yellow-300 font-bold mb-2 flex items-center">
+                  <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" fill="currentColor" className="mr-2" viewBox="0 0 16 16">
+                    <path d="M5.5 13v1.25c0 .138.112.25.25.25h1a.25.25 0 0 0 .25-.25V13h.5v1.25c0 .138.112.25.25.25h1a.25.25 0 0 0 .25-.25V13h.084c1.992 0 3.416-1.033 3.416-2.82 0-1.502-1.007-2.323-2.186-2.44v-.088c.97-.242 1.683-.974 1.683-2.19C11.997 3.93 10.847 3 9.092 3H9V1.75a.25.25 0 0 0-.25-.25h-1a.25.25 0 0 0-.25.25V3h-.573V1.75a.25.25 0 0 0-.25-.25h-1a.25.25 0 0 0-.25.25V3H4.75a.25.25 0 0 0-.25.25v1a.25.25 0 0 0 .25.25h.5v7h-.5a.25.25 0 0 0-.25.25v1c0 .138.112.25.25.25h.5zm4.5-8.76c0 1.156-.512 1.76-1.625 1.76h-.5v-3.5h.5c1.1 0 1.625.596 1.625 1.74zm.5 4.495c0 1.216-.593 1.815-1.76 1.815H9v-3.66h.75c1.154 0 1.75.648 1.75 1.845z" />
+                  </svg>
+                  Sistema NFT e Blockchain
+                </h3>
+                <p className="text-cyan-100">
+                  Os dinossauros evoluídos se tornam NFTs dinâmicos na rede Polygon ou Solana,
+                  permitindo que jogadores colecionem, negociem ou aluguem seus pets. O sistema
+                  é totalmente opcional - você pode jogar normalmente sem usar blockchain,
+                  conectando sua wallet apenas quando desejar negociar ou mintar seus dinossauros.
+                </p>
+                <div className="mt-4 flex flex-wrap gap-2">
+                  <span className="inline-block bg-gradient-to-r from-purple-900/30 to-pink-900/30 text-pink-300 text-xs px-3 py-1 rounded-full border border-purple-500/30">
+                    NFT ERC-721
+                  </span>
+                  <span className="inline-block bg-gradient-to-r from-cyan-900/30 to-blue-900/30 text-blue-300 text-xs px-3 py-1 rounded-full border border-blue-500/30">
+                    Polygon
+                  </span>
+                  <span className="inline-block bg-gradient-to-r from-purple-900/30 to-blue-900/30 text-purple-300 text-xs px-3 py-1 rounded-full border border-purple-500/30">
+                    Solana
+                  </span>
+                  <span className="inline-block bg-gradient-to-r from-green-900/30 to-emerald-900/30 text-emerald-300 text-xs px-3 py-1 rounded-full border border-green-500/30">
+                    Marketplace Interno
+                  </span>
+                </div>
+              </div>
+            </div>
+          </div>
+        </motion.div>
+      </section>
+
+      {/* TECNOLOGIA E ESTILO VISUAL */}
+      <section className="py-20 bg-gradient-to-b from-black to-cyan-950 flex flex-col items-center">
+        <motion.h2
+          className="text-3xl md:text-4xl font-bold text-yellow-400 mb-10 text-center"
+          variants={sectionAnim}
+          initial="hidden"
+          whileInView="visible"
+          viewport={{ once: true }}
+        >
+          Tecnologia e Estilo Visual
+        </motion.h2>
+
+        <div className="container max-w-6xl mx-auto px-4 sm:px-8">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-8 mb-12">
+            <motion.div
+              className="bg-black/40 backdrop-blur-sm rounded-xl overflow-hidden border border-cyan-500/20 p-6"
+              variants={sectionAnim}
               initial="hidden"
               whileInView="visible"
               viewport={{ once: true }}
             >
-              <img src={img} alt="Galeria BombRiders" className="w-full h-56 object-cover" />
+              <h3 className="text-xl text-cyan-300 font-bold mb-4 flex items-center">
+                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" fill="currentColor" className="mr-2" viewBox="0 0 16 16">
+                  <path d="M2.5 5.5C2.5 3.57 3.93 2 5.8 2c1.4 0 2.54.95 2.94 2.25.18.56.99.69 1.3.2A2.47 2.47 0 0 1 12.2 3c1.87 0 3.3 1.57 3.3 3.5 0 2.5-2.98 4.95-5.2 6.96a1 1 0 0 1-1.4 0C6.98 11.45 4 9 4 6.5a2.5 2.5 0 0 1-.5-1z" />
+                </svg>
+                Estilo Visual
+              </h3>
+
+              <div className="space-y-4">
+                <p className="text-cyan-100">
+                  BombRiders apresenta um visual cartoon 3D estilizado, inspirado em clássicos como
+                  Bomberman e Mario 3D World, com uma estética moderna e vibrante.
+                </p>
+
+                <div className="grid grid-cols-2 gap-3">
+                  <div className="bg-gradient-to-br from-cyan-900/30 to-gray-900 p-3 rounded-lg border border-cyan-500/20">
+                    <h4 className="text-cyan-300 text-sm font-bold mb-2">Personagens</h4>
+                    <p className="text-cyan-100 text-xs">
+                      Design chibi com proporções estilizadas e animações exageradas
+                    </p>
+                  </div>
+
+                  <div className="bg-gradient-to-br from-yellow-900/30 to-gray-900 p-3 rounded-lg border border-yellow-500/20">
+                    <h4 className="text-yellow-300 text-sm font-bold mb-2">Dinossauros</h4>
+                    <p className="text-cyan-100 text-xs">
+                      Tecnológicos com elementos biomecânicos e partes brilhantes
+                    </p>
+                  </div>
+
+                  <div className="bg-gradient-to-br from-green-900/30 to-gray-900 p-3 rounded-lg border border-green-500/20">
+                    <h4 className="text-green-300 text-sm font-bold mb-2">Cenários</h4>
+                    <p className="text-cyan-100 text-xs">
+                      Ambientes dinâmicos com clima e eventos que afetam a jogabilidade
+                    </p>
+                  </div>
+
+                  <div className="bg-gradient-to-br from-purple-900/30 to-gray-900 p-3 rounded-lg border border-purple-500/20">
+                    <h4 className="text-purple-300 text-sm font-bold mb-2">Efeitos</h4>
+                    <p className="text-cyan-100 text-xs">
+                      Explosões e habilidades com partículas e luzes vibrantes
+                    </p>
+                  </div>
+                </div>
+              </div>
             </motion.div>
-          ))}
+
+            <motion.div
+              className="bg-black/40 backdrop-blur-sm rounded-xl overflow-hidden border border-yellow-500/20 p-6"
+              variants={sectionAnim}
+              initial="hidden"
+              whileInView="visible"
+              viewport={{ once: true }}
+              transition={{ delay: 0.2 }}
+            >
+              <h3 className="text-xl text-yellow-300 font-bold mb-4 flex items-center">
+                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" fill="currentColor" className="mr-2" viewBox="0 0 16 16">
+                  <path d="M8 4.754a3.246 3.246 0 1 0 0 6.492 3.246 3.246 0 0 0 0-6.492zM5.754 8a2.246 2.246 0 1 1 4.492 0 2.246 2.246 0 0 1-4.492 0z" />
+                  <path d="M9.796 1.343c-.527-1.79-3.065-1.79-3.592 0l-.094.319a.873.873 0 0 1-1.255.52l-.292-.16c-1.64-.892-3.433.902-2.54 2.541l.159.292a.873.873 0 0 1-.52 1.255l-.319.094c-1.79.527-1.79 3.065 0 3.592l.319.094a.873.873 0 0 1 .52 1.255l-.16.292c-.892 1.64.901 3.434 2.541 2.54l.292-.159a.873.873 0 0 1 1.255.52l.094.319c.527 1.79 3.065 1.79 3.592 0l.094-.319a.873.873 0 0 1 1.255-.52l.292.16c1.64.893 3.434-.902 2.54-2.541l-.159-.292a.873.873 0 0 1 .52-1.255l.319-.094c1.79-.527 1.79-3.065 0-3.592l-.319-.094a.873.873 0 0 1-.52-1.255l.16-.292c.893-1.64-.902-3.433-2.541-2.54l-.292.159a.873.873 0 0 1-1.255-.52l-.094-.319zm-2.633.283c.246-.835 1.428-.835 1.674 0l.094.319a1.873 1.873 0 0 0 2.693 1.115l.291-.16c.764-.415 1.6.42 1.184 1.185l-.159.292a1.873 1.873 0 0 0 1.116 2.692l.318.094c.835.246.835 1.428 0 1.674l-.319.094a1.873 1.873 0 0 0-1.115 2.693l.16.291c.415.764-.42 1.6-1.185 1.184l-.291-.159a1.873 1.873 0 0 0-2.693 1.116l-.094.318c-.246.835-1.428.835-1.674 0l-.094-.319a1.873 1.873 0 0 0-2.692-1.115l-.292.16c-.764.415-1.6-.42-1.184-1.185l.159-.291A1.873 1.873 0 0 0 1.945 8.93l-.319-.094c-.835-.246-.835-1.428 0-1.674l.319-.094A1.873 1.873 0 0 0 3.06 4.377l-.16-.292c-.415-.764.42-1.6 1.185-1.184l.292.159a1.873 1.873 0 0 0 2.692-1.115l.094-.319z" />
+                </svg>
+                Tecnologias
+              </h3>
+
+              <div className="space-y-4">
+                <p className="text-cyan-100">
+                  Desenvolvido com tecnologias modernas para garantir performance e qualidade
+                  gráfica, permitindo jogabilidade fluida em navegadores.
+                </p>
+
+                <div className="grid grid-cols-2 gap-3">
+                  <div className="bg-gradient-to-br from-blue-900/30 to-gray-900 p-3 rounded-lg border border-blue-500/20">
+                    <h4 className="text-blue-300 text-sm font-bold mb-2">Frontend</h4>
+                    <p className="text-cyan-100 text-xs">
+                      React + Vite + TypeScript
+                    </p>
+                  </div>
+
+                  <div className="bg-gradient-to-br from-purple-900/30 to-gray-900 p-3 rounded-lg border border-purple-500/20">
+                    <h4 className="text-purple-300 text-sm font-bold mb-2">Gráficos 3D</h4>
+                    <p className="text-cyan-100 text-xs">
+                      React Three Fiber (Three.js)
+                    </p>
+                  </div>
+
+                  <div className="bg-gradient-to-br from-orange-900/30 to-gray-900 p-3 rounded-lg border border-orange-500/20">
+                    <h4 className="text-orange-300 text-sm font-bold mb-2">Backend</h4>
+                    <p className="text-cyan-100 text-xs">
+                      Firebase + WebSockets para multijogador
+                    </p>
+                  </div>
+
+                  <div className="bg-gradient-to-br from-green-900/30 to-gray-900 p-3 rounded-lg border border-green-500/20">
+                    <h4 className="text-green-300 text-sm font-bold mb-2">Blockchain</h4>
+                    <p className="text-cyan-100 text-xs">
+                      Integração com MetaMask e NFTs dinâmicos
+                    </p>
+                  </div>
+                </div>
+
+                <div className="mt-4 px-4 py-3 bg-cyan-950/50 rounded-lg border border-cyan-500/20">
+                  <div className="flex items-start">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" fill="currentColor" className="text-cyan-300 mt-1 mr-2 flex-shrink-0" viewBox="0 0 16 16">
+                      <path d="M8 15A7 7 0 1 1 8 1a7 7 0 0 1 0 14zm0 1A8 8 0 1 0 8 0a8 8 0 0 0 0 16z" />
+                      <path d="m8.93 6.588-2.29.287-.082.38.45.083c.294.07.352.176.288.469l-.738 3.468c-.194.897.105 1.319.808 1.319.545 0 1.178-.252 1.465-.598l.088-.416c-.2.176-.492.246-.686.246-.275 0-.375-.193-.304-.533L8.93 6.588zM9 4.5a1 1 0 1 1-2 0 1 1 0 0 1 2 0z" />
+                    </svg>
+                    <p className="text-cyan-100 text-xs">
+                      <span className="text-cyan-300 font-bold">Importante:</span> O jogo foi projetado para ser acessível mesmo sem wallet conectada.
+                      A integração blockchain é totalmente opcional e permite que os jogadores colecionem e negociem seus pets evoluídos como NFTs.
+                    </p>
+                  </div>
+                </div>
+              </div>
+            </motion.div>
+          </div>
+
+          <motion.div
+            className="bg-gradient-to-r from-black/60 to-cyan-950/30 rounded-xl p-6 border border-cyan-500/20"
+            variants={sectionAnim}
+            initial="hidden"
+            whileInView="visible"
+            viewport={{ once: true }}
+            transition={{ delay: 0.4 }}
+          >
+            <h3 className="text-xl text-cyan-300 font-bold mb-4 flex items-center">
+              <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" fill="currentColor" className="mr-2" viewBox="0 0 16 16">
+                <path d="M14 1a1 1 0 0 1 1 1v12a1 1 0 0 1-1 1H2a1 1 0 0 1-1-1V2a1 1 0 0 1 1-1h12zM2 0a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V2a2 2 0 0 0-2-2H2z" />
+                <path d="M5.255 5.786a.237.237 0 0 0 .241.247h.825c.138 0 .248-.113.266-.25.09-.656.54-1.134 1.342-1.134.686 0 1.314.343 1.314 1.168 0 .635-.374.927-.965 1.371-.673.489-1.206 1.06-1.168 1.987l.003.217a.25.25 0 0 0 .25.246h.811a.25.25 0 0 0 .25-.25v-.105c0-.718.273-.927 1.01-1.486.609-.463 1.244-.977 1.244-2.056 0-1.511-1.276-2.241-2.673-2.241-1.267 0-2.655.59-2.75 2.286zm1.557 5.763c0 .533.425.927 1.01.927.609 0 1.028-.394 1.028-.927 0-.552-.42-.94-1.029-.94-.584 0-1.009.388-1.009.94z" />
+              </svg>
+              Modos de Jogo
+            </h3>
+
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+              <div className="bg-gradient-to-br from-cyan-900/20 to-black p-4 rounded-lg border border-cyan-500/10">
+                <h4 className="text-cyan-300 text-sm font-bold mb-2">Campanha Solo</h4>
+                <p className="text-cyan-100 text-xs">
+                  Explore o mundo e complete missões para avançar na história e evoluir seu dinossauro
+                </p>
+              </div>
+
+              <div className="bg-gradient-to-br from-green-900/20 to-black p-4 rounded-lg border border-green-500/10">
+                <h4 className="text-green-300 text-sm font-bold mb-2">Coop Local e Online</h4>
+                <p className="text-cyan-100 text-xs">
+                  Jogue com amigos em cooperação para derrotar chefes e completar missões especiais
+                </p>
+              </div>
+
+              <div className="bg-gradient-to-br from-red-900/20 to-black p-4 rounded-lg border border-red-500/10">
+                <h4 className="text-red-300 text-sm font-bold mb-2">PvP Competitivo</h4>
+                <p className="text-cyan-100 text-xs">
+                  Enfrente outros jogadores em arenas especiais para testar suas habilidades
+                </p>
+              </div>
+
+              <div className="bg-gradient-to-br from-yellow-900/20 to-black p-4 rounded-lg border border-yellow-500/10">
+                <h4 className="text-yellow-300 text-sm font-bold mb-2">Torneios e Desafios</h4>
+                <p className="text-cyan-100 text-xs">
+                  Participe de eventos semanais com ranking e recompensas exclusivas
+                </p>
+              </div>
+            </div>
+
+            <div className="mt-6 text-center">
+              <p className="text-cyan-300 text-sm">
+                <span className="text-yellow-300 font-bold">Em breve:</span> Modo Criador para construção de mapas personalizados!
+              </p>
+            </div>
+          </motion.div>
         </div>
       </section>
 
