@@ -1,11 +1,13 @@
 import React, { useState } from 'react';
 import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
 import BombLoadingScreen from './components/BombLoadingScreen';
+import Header from './components/Header';
 import GamePage from './pages/GamePage';
 import MultiplayerLobby from './pages/MultiplayerLobby';
 import NFTInventory from './pages/NFTInventory';
 import './App.css';
 import HomePage from './pages/HomePage';
+import LandingPage from './pages/LandingPage';
 
 function App() {
   const [isLoading, setIsLoading] = useState(true);
@@ -21,12 +23,18 @@ function App() {
   return (
     <Router>
       <div className="App">
-        <Routes>
-          <Route path="/" element={<HomePage />} />
-          <Route path="/multiplayer" element={<MultiplayerLobby />} />
-          <Route path="/nft" element={<NFTInventory />} />
-          <Route path="/game" element={<GamePage />} />
-        </Routes>
+        {/* <AppSidebar /> */}
+        <Header />
+        <div className="content-wrapper pt-20 transition-all">
+          <Routes>
+            <Route path="/" element={<HomePage />} />
+            <Route path="/home" element={<HomePage />} />
+            <Route path="/multiplayer" element={<MultiplayerLobby />} />
+            <Route path="/nft" element={<NFTInventory />} />
+            <Route path="/game" element={<GamePage />} />
+            <Route path="/landing" element={<LandingPage />} /> {/* Mantido para referência, mas não será a rota principal */}
+          </Routes>
+        </div>
       </div>
     </Router>
   );

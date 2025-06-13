@@ -2,6 +2,7 @@ import React, { useEffect, useRef } from 'react';
 import { motion } from 'framer-motion';
 import { ParallaxProvider, ParallaxBanner } from 'react-scroll-parallax';
 import { animate, stagger } from 'animejs';
+import { useNavigate } from 'react-router-dom';
 import CharacterCard from "@/components/CharacterCard";
 import Carousel3D from "@/components/Carousel3D";
 import HeroWave from "@/components/HeroWave";
@@ -70,8 +71,17 @@ const FlipCard: React.FC<{ front: React.ReactNode; back: React.ReactNode }> = ({
 );
 
 const HomePage: React.FC = () => {
+  const navigate = useNavigate();
+
+  // Navegação centralizada
+  const navigationButtons = [
+    { path: '/game', label: 'Modo Solo', icon: '▶️', bgColor: 'from-green-500 to-green-700', description: 'Jogue contra a IA' },
+    { path: '/multiplayer', label: 'Multiplayer', icon: '👥', bgColor: 'from-blue-500 to-blue-700', description: 'Jogue online com amigos' },
+    { path: '/nft', label: 'NFTs', icon: '💎', bgColor: 'from-purple-500 to-purple-700', description: 'Colecionáveis digitais' },
+  ];
+
   // Imagens locais e placeholders
-  const dinoBg = 'src/assets/images/game/gameplay.jpg';
+  const dinoBg = 'src/assets/images/characters/capa.jpeg';
   const bombRider1 = 'src/assets/images/characters/bomberman1.jpg';
   const bombRider2 = 'src/assets/images/characters/bomberman2.jpg';
   const dino1 = 'src/assets/images/nft/dino_egg1.jpg';
@@ -118,8 +128,8 @@ const HomePage: React.FC = () => {
     });
   }, []);
 
-  return (
-    <ParallaxProvider>
+  return (<ParallaxProvider>
+    <div className="pt-16"> {/* Adicionado pt-16 para compensar o Header fixo */}
       {/* HERO SECTION */}      <section className="relative min-h-[90vh] flex flex-col justify-center items-center bg-gradient-to-b from-cyan-900 via-gray-900 to-black overflow-hidden">
         <HeroWave />
         {/* Bomb image behind the title */}
@@ -193,8 +203,7 @@ const HomePage: React.FC = () => {
               </svg>
             </motion.div>
           </motion.h1>
-        </motion.div>
-        <motion.p
+        </motion.div>        <motion.p
           className="z-10 text-lg md:text-2xl text-cyan-100 text-center max-w-2xl mb-8"
           variants={sectionAnim}
           initial="hidden"
@@ -202,6 +211,47 @@ const HomePage: React.FC = () => {
         >
           Num futuro distópico, pilotos chamados BombRiders usam bombas para despertar dinossauros tecnológicos e salvar o planeta de um colapso total.
         </motion.p>
+
+        {/* Botões de Navegação */}
+        <motion.div
+          className="z-10 flex flex-wrap gap-4 md:gap-6 justify-center mb-8"
+          variants={sectionAnim}
+          initial="hidden"
+          animate="visible"
+          transition={{ delay: 0.2 }}
+        >
+          <motion.a
+            href="/game"
+            className="px-6 py-4 bg-gradient-to-r from-green-500 to-blue-600 hover:from-green-600 hover:to-blue-700 text-white font-bold rounded-full shadow-lg flex items-center gap-2 hover:shadow-green-500/25"
+            whileHover={{ scale: 1.05 }}
+            whileTap={{ scale: 0.95 }}
+          >
+            <span className="text-xl">▶️</span>
+            <span>Modo Solo</span>
+          </motion.a>
+
+          <motion.a
+            href="/multiplayer"
+            className="px-6 py-4 bg-gradient-to-r from-blue-500 to-purple-600 hover:from-blue-600 hover:to-purple-700 text-white font-bold rounded-full shadow-lg flex items-center gap-2 hover:shadow-blue-500/25"
+            whileHover={{ scale: 1.05 }}
+            whileTap={{ scale: 0.95 }}
+          >
+            <span className="text-xl">👥</span>
+            <span>Multiplayer</span>
+          </motion.a>
+
+          <motion.a
+            href="/nft"
+            className="px-6 py-4 bg-gradient-to-r from-purple-500 to-pink-600 hover:from-purple-600 hover:to-pink-700 text-white font-bold rounded-full shadow-lg flex items-center gap-2 hover:shadow-purple-500/25"
+            whileHover={{ scale: 1.05 }}
+            whileTap={{ scale: 0.95 }}
+          >
+            <span className="text-xl">💎</span>
+            <span>NFTs</span>
+          </motion.a>
+        </motion.div>
+
+        {/* Botão Principal */}
         <motion.button
           className="z-10 px-8 py-4 bg-yellow-400 text-gray-900 font-bold rounded-full shadow-lg hover:bg-yellow-300 transition text-xl"
           whileHover={{ scale: 1.08 }}
@@ -214,7 +264,69 @@ const HomePage: React.FC = () => {
           <div className="absolute left-1/4 top-1/3 w-32 h-32 rounded-full bg-cyan-400 opacity-20 blur-2xl animate-pulse" />
           <div className="absolute right-1/4 bottom-1/4 w-40 h-40 rounded-full bg-yellow-400 opacity-10 blur-2xl animate-pulse" />
         </div>
-      </section>      {/* LORE / HISTÓRIA */}
+      </section>
+
+      {/* NAVEGAÇÃO CENTRALIZADA */}
+      <section className="py-16 bg-gradient-to-b from-black via-cyan-950/30 to-gray-900 flex flex-col items-center">
+        <motion.h2
+          className="text-4xl font-bold mb-4 text-center bg-gradient-to-r from-yellow-400 to-orange-500 bg-clip-text text-transparent"
+          variants={sectionAnim}
+          initial="hidden"
+          whileInView="visible"
+          viewport={{ once: true }}
+        >
+          ESCOLHA SUA AVENTURA
+        </motion.h2>
+
+        <motion.p
+          className="text-gray-400 text-lg mb-12 max-w-3xl text-center px-4"
+          variants={sectionAnim}
+          initial="hidden"
+          whileInView="visible"
+          viewport={{ once: true }}
+        >
+          Explore diferentes modos de jogo e descubra todas as possibilidades no universo BombRiders
+        </motion.p>
+
+        <motion.div
+          className="flex flex-wrap justify-center gap-6 max-w-6xl px-4"
+          variants={sectionAnim}
+          initial="hidden"
+          whileInView="visible"
+          viewport={{ once: true }}
+        >
+          {navigationButtons.map((button) => (
+            <motion.div
+              key={button.path}
+              className="w-64 bg-gray-900/80 border-2 border-cyan-700/30 rounded-xl overflow-hidden shadow-lg shadow-cyan-800/20 backdrop-blur-sm transition-all duration-300 hover:scale-105 hover:shadow-yellow-500/20 cursor-pointer"
+              whileHover={{ y: -5 }}
+              onClick={() => navigate(button.path)}
+            >
+              <div className={`h-2 bg-gradient-to-r ${button.bgColor}`}></div>
+              <div className="p-6">
+                <div className="flex items-center mb-4">
+                  <div className="w-12 h-12 rounded-full flex items-center justify-center mr-4 relative bg-gradient-to-br from-gray-800 to-gray-900 border border-gray-700">
+                    <span className="text-2xl">{button.icon}</span>
+                    <div className="absolute -inset-1 rounded-full bg-yellow-400 opacity-10 blur-sm"></div>
+                  </div>
+                  <h3 className="text-xl font-bold text-white">{button.label}</h3>
+                </div>
+                <p className="text-gray-400 text-sm">{button.description}</p>
+                <div className="mt-4 flex justify-end">
+                  <div className="text-yellow-500 flex items-center text-sm font-medium">
+                    JOGAR
+                    <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4 ml-1" viewBox="0 0 20 20" fill="currentColor">
+                      <path fillRule="evenodd" d="M12.293 5.293a1 1 0 011.414 0l4 4a1 1 0 010 1.414l-4 4a1 1 0 01-1.414-1.414L14.586 11H3a1 1 0 110-2h11.586l-2.293-2.293a1 1 0 010-1.414z" clipRule="evenodd" />
+                    </svg>
+                  </div>
+                </div>
+              </div>
+            </motion.div>
+          ))}
+        </motion.div>
+      </section>
+
+      {/* LORE / HISTÓRIA */}
       <ParallaxBanner
         layers={[
           { image: dinoBg, speed: -20 },
@@ -516,26 +628,26 @@ const HomePage: React.FC = () => {
                   <div
                     key={fase.nome}
                     className={`flex items-start p-3 rounded-lg transition-all ${fase.status === "atual"
-                        ? "bg-gradient-to-r from-yellow-500/30 to-yellow-900/10 border border-yellow-500/40"
-                        : fase.status === "próxima"
-                          ? "bg-gradient-to-r from-cyan-500/20 to-cyan-900/10 border border-cyan-500/30"
-                          : "bg-gradient-to-r from-gray-700/20 to-gray-900/10 border border-gray-600/20"
+                      ? "bg-gradient-to-r from-yellow-500/30 to-yellow-900/10 border border-yellow-500/40"
+                      : fase.status === "próxima"
+                        ? "bg-gradient-to-r from-cyan-500/20 to-cyan-900/10 border border-cyan-500/30"
+                        : "bg-gradient-to-r from-gray-700/20 to-gray-900/10 border border-gray-600/20"
                       }`}
                   >
                     <div className={`rounded-full w-8 h-8 flex items-center justify-center text-xs font-bold mr-3 flex-shrink-0 ${fase.status === "atual"
-                        ? "bg-yellow-400 text-gray-900"
-                        : fase.status === "próxima"
-                          ? "bg-cyan-400 text-gray-900"
-                          : "bg-gray-700 text-gray-300"
+                      ? "bg-yellow-400 text-gray-900"
+                      : fase.status === "próxima"
+                        ? "bg-cyan-400 text-gray-900"
+                        : "bg-gray-700 text-gray-300"
                       }`}>
                       {i + 1}
                     </div>
                     <div>
                       <h4 className={`font-bold text-base mb-1 ${fase.status === "atual"
-                          ? "text-yellow-300"
-                          : fase.status === "próxima"
-                            ? "text-cyan-300"
-                            : "text-gray-300"
+                        ? "text-yellow-300"
+                        : fase.status === "próxima"
+                          ? "text-cyan-300"
+                          : "text-gray-300"
                         }`}>
                         {fase.nome}
                         {fase.status === "atual" && (
@@ -1055,9 +1167,9 @@ const HomePage: React.FC = () => {
           <a href="#" className="hover:text-yellow-400 transition">Twitter</a>
           <a href="#" className="hover:text-yellow-400 transition">Twitch</a>
         </div>
-        <p className="text-sm">© 2025 BombRiders. Todos os direitos reservados.</p>
-      </footer>
-    </ParallaxProvider>
+        <p className="text-sm">© 2025 BombRiders. Todos os direitos reservados.</p>      </footer>
+    </div> {/* Fechamento da div pt-16 */}
+  </ParallaxProvider>
   );
 };
 
