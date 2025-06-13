@@ -1,10 +1,46 @@
 import { Canvas } from '@react-three/fiber';
 import { KeyboardControls } from '@react-three/drei';
 import * as THREE from 'three';
+import { useEffect } from 'react';
 import GameUI from '../game/components/ui/GameUI';
 import Game from './PageGame/Game';
 
 const GamePage = () => {
+  // Efeito para desativar o scroll e esconder o Header ao entrar na página do jogo
+  useEffect(() => {
+    // Salva o estilo de overflow original do body
+    const originalOverflow = document.body.style.overflow;
+    // Desativa o scroll
+    document.body.style.overflow = 'hidden';
+    
+    // Esconde o Header
+    const headerElement = document.querySelector('header');
+    if (headerElement) {
+      headerElement.style.display = 'none';
+    }
+    
+    // Ajusta o padding-top do conteúdo para compensar a ausência do header
+    const contentWrapper = document.querySelector('.content-wrapper');
+    if (contentWrapper) {
+      contentWrapper.style.paddingTop = '0';
+    }
+    
+    // Limpa os efeitos ao sair da página
+    return () => {
+      // Restaura o scroll
+      document.body.style.overflow = originalOverflow;
+      
+      // Restaura a exibição do Header
+      if (headerElement) {
+        headerElement.style.display = 'block';
+      }
+      
+      // Restaura o padding original
+      if (contentWrapper) {
+        contentWrapper.style.paddingTop = '5rem'; // 20px em rem (equivalente a pt-20)
+      }
+    };
+  }, []);
 
   const keyboardMap = [
     { name: 'forward', keys: ['ArrowUp', 'KeyW'] },
