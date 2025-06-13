@@ -200,25 +200,52 @@ const Player: React.FC<PlayerProps> = ({
       }
     }
   });
-
   return (
     <group ref={meshRef} position={currentPosition.current.toArray()}>
+      {/* Efeito de sombra projetada */}
+      <mesh
+        position={[0, -0.48, 0]}
+        rotation={[-Math.PI / 2, 0, 0]}
+        receiveShadow
+      >
+        <circleGeometry args={[0.4, 24]} />
+        <meshBasicMaterial
+          color="#000000"
+          opacity={0.35}
+          transparent={true}
+          depthWrite={false}
+        />
+      </mesh>
+
       {/* Corpo principal do jogador */}
       <mesh
         castShadow
         receiveShadow
         rotation={[rotationRef.current.x, rotationRef.current.y, rotationRef.current.z]}
       >
-        <capsuleGeometry args={[0.35, 0.5, 6, 20]} /> {/* Geometria de alta qualidade */}
+        <capsuleGeometry args={[0.35, 0.5, 6, 20]} />
         <meshStandardMaterial
           ref={materialRef}
-          color="#FFA500"
+          color={isInvincible ? "#FFD700" : "#FFA500"} // Dourado quando invencível
           roughness={0.25}
-          metalness={0.25}
-          emissive="#FF4500"
-          emissiveIntensity={isMoving.current ? 0.15 : 0.05} // Brilho sutil durante movimento
+          metalness={isInvincible ? 0.7 : 0.25} // Mais metálico quando invencível
+          emissive={isInvincible ? "#FFFF00" : "#FF4500"}
+          emissiveIntensity={isInvincible ? 0.4 : (isMoving.current ? 0.15 : 0.05)}
         />
       </mesh>
+
+      {/* Efeito de brilho ao redor quando invencível */}
+      {isInvincible && (
+        <mesh>
+          <sphereGeometry args={[0.55, 16, 16]} />
+          <meshBasicMaterial
+            color="#FFFF00"
+            opacity={0.2}
+            transparent={true}
+            depthWrite={false}
+          />
+        </mesh>
+      )}
 
       {/* Adiciona olhos para dar personalidade e orientação visual */}
       <mesh position={[0.15, 0.3, -0.29]} scale={0.1}>

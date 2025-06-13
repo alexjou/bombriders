@@ -26,56 +26,87 @@ const GameHUD = ({ player, onPause }) => {
   }, [player.score, prevScore]);
   return (
     <div className="fixed inset-0 pointer-events-none">
-      {/* Barra superior com informações do jogador */}
-      <div className="absolute top-0 left-0 right-0 bg-black bg-opacity-50 p-2 flex justify-between items-center">
+      {/* Barra superior com informações do jogador - Nova UI temática */}
+      <div className="absolute top-0 left-0 right-0 bg-gradient-to-r from-gray-900/80 via-black/90 to-gray-900/80 backdrop-blur-sm p-3 border-b border-yellow-500/30 shadow-lg shadow-yellow-500/10 flex justify-between items-center">
         <div className="flex items-center gap-4">
-          {/* Personagem com Score */}
-          <div className="flex items-center gap-2">
-            <div className="w-10 h-10 rounded-full bg-primary flex items-center justify-center text-white font-bold">
-              {player.character.charAt(0)}
+          {/* Personagem com Score - Design futurista */}
+          <div className="flex items-center gap-3">
+            <div className="w-12 h-12 rounded-full bg-gradient-to-br from-orange-500 to-red-600 flex items-center justify-center text-white font-bold relative border-2 border-yellow-400/40 shadow-lg shadow-orange-500/20">
+              <span className="text-xl">{player.character.charAt(0)}</span>
+              {/* Efeito de brilho */}
+              <div className="absolute inset-0 rounded-full bg-orange-400 opacity-30 blur-sm"></div>
             </div>
             <div>
               <div className="flex items-center gap-2">
-                <span className="text-white font-semibold">{player.character}</span>
-                <span className="text-yellow-400 font-bold text-sm relative">
-                  ({player.score} pontos)
+                <span className="text-white font-bold text-lg tracking-wider bg-clip-text text-transparent bg-gradient-to-r from-yellow-100 to-yellow-300">
+                  {player.character}
+                </span>
+                <span className="text-yellow-400 font-bold text-sm bg-black/40 px-2 py-0.5 rounded-md border border-yellow-500/30 relative">
+                  <span className="text-xs text-orange-300 mr-1 opacity-70">●</span>
+                  {player.score} pontos
                   {/* Animação quando o score aumenta */}
                   {showScoreAnimation && (
-                    <span className="absolute -top-5 -right-2 text-green-400 font-bold animate-bounce">
+                    <span className="absolute -top-5 -right-2 text-green-400 font-bold animate-bounce px-2 py-0.5 bg-black/60 rounded-md">
                       +100!
                     </span>
                   )}
                 </span>
               </div>
-              <div className="text-xs text-gray-300">
-                {player.currentDino ? `+ ${player.currentDino}` : 'Sem dino'}
+              <div className="text-xs text-gray-300 font-mono italic">
+                <span className="text-cyan-400">STATUS:</span> {player.currentDino ? `${player.currentDino}` : 'Piloto Solo'}
               </div>
             </div>
           </div>
           
-          {/* Vidas */}
-          <div className="flex items-center gap-1">
+          {/* Separador visual */}
+          <div className="h-10 w-px bg-gradient-to-b from-transparent via-yellow-500/30 to-transparent mx-1"></div>
+          
+          {/* Vidas - Design aprimorado */}
+          <div className="flex items-center gap-1 bg-black/30 px-3 py-1 rounded-lg border border-red-500/30">
+            <div className="text-red-500 text-xs font-mono mr-1">VIDA:</div>
             {Array.from({ length: player.lives }).map((_, i) => (
-              <div key={i} className="text-red-500 text-xl">❤️</div>
+              <div key={i} className="text-red-500 text-xl relative">
+                <span className="animate-pulse">❤️</span>
+                <div className="absolute inset-0 rounded-full bg-red-400 opacity-10 blur-sm"></div>
+              </div>
+            ))}
+            {/* Posições vazias para vidas perdidas */}
+            {Array.from({ length: Math.max(0, 3 - player.lives) }).map((_, i) => (
+              <div key={i} className="text-gray-600 text-xl opacity-40">❤️</div>
             ))}
           </div>
           
-          {/* Power-ups - Alcance de bombas com ícone */}
-          <div className="flex items-center gap-2 ml-4">
-            <div className="text-orange-400 text-lg">🔥</div>
-            <div className="text-white font-bold">{player.bombRange || 2}</div>
+          {/* Power-ups - Alcance de bombas com design futurista */}
+          <div className="flex items-center gap-2 ml-4 bg-gradient-to-r from-orange-900/40 to-orange-700/20 px-3 py-1 rounded-lg border border-orange-500/30">
+            <div className="text-orange-400 text-lg relative">
+              🔥
+              <div className="absolute inset-0 rounded-full bg-orange-400 opacity-20 blur-sm"></div>
+            </div>
+            <div className="flex flex-col">
+              <div className="text-xs text-orange-300 font-mono">ALCANCE</div>
+              <div className="text-white font-bold">{player.bombRange || 2}</div>
+            </div>
           </div>
           
-          {/* Power-ups - Máximo de bombas com ícone */}
-          <div className="flex items-center gap-2 ml-4">
-            <div className="text-blue-400 text-lg">💣</div>
-            <div className="text-white font-bold">{player.bombs || 1}</div>
+          {/* Power-ups - Máximo de bombas com design futurista */}
+          <div className="flex items-center gap-2 ml-2 bg-gradient-to-r from-blue-900/40 to-blue-700/20 px-3 py-1 rounded-lg border border-blue-500/30">
+            <div className="text-blue-400 text-lg relative">
+              💣
+              <div className="absolute inset-0 rounded-full bg-blue-400 opacity-20 blur-sm"></div>
+            </div>
+            <div className="flex flex-col">
+              <div className="text-xs text-blue-300 font-mono">BOMBAS</div>
+              <div className="text-white font-bold">{player.bombs || 1}</div>
+            </div>
           </div>
           
-          {/* Status de invencibilidade */}
+          {/* Status de invencibilidade com design futurista */}
           {player.isInvincible && (
-            <div className="ml-4 text-yellow-300 animate-pulse font-bold">
-              INVENCÍVEL
+            <div className="ml-2 bg-gradient-to-r from-yellow-900/50 to-yellow-700/30 px-3 py-1 rounded-lg border border-yellow-400/50 flex items-center">
+              <div className="w-2 h-2 rounded-full bg-yellow-400 animate-ping mr-2"></div>
+              <div className="text-yellow-300 animate-pulse font-bold">
+                INVENCÍVEL
+              </div>
             </div>
           )}
           
