@@ -92,7 +92,7 @@ const createInitialGrid = (enemiesInitial: EnemyData[]): CellType[][] => { // Re
 const createInitialEnemies = (): EnemyData[] => {
   const newEnemies: EnemyData[] = []; // Renomeado para newEnemies
   const occupiedCells = new Set<string>();
-  
+
   // Adicionar proteção ao redor do jogador (área segura)
   occupiedCells.add(`${PLAYER_START_ROW}-${PLAYER_START_COL}`);
   occupiedCells.add(`${PLAYER_START_ROW}-${PLAYER_START_COL + 1}`);
@@ -100,14 +100,14 @@ const createInitialEnemies = (): EnemyData[] => {
   occupiedCells.add(`${PLAYER_START_ROW - 1}-${PLAYER_START_COL}`); // Adicional
   occupiedCells.add(`${PLAYER_START_ROW}-${PLAYER_START_COL - 1}`); // Adicional
   occupiedCells.add(`${PLAYER_START_ROW + 1}-${PLAYER_START_COL + 1}`); // Diagonal
-  
+
   // Contador para evitar loop infinito
   let attemptsCount = 0;
   const MAX_ATTEMPTS = 1000;
 
   while (newEnemies.length < INITIAL_ENEMY_COUNT && attemptsCount < MAX_ATTEMPTS) {
     attemptsCount++;
-    
+
     const r = Math.floor(Math.random() * (GRID_ROWS - 2)) + 1;
     const c = Math.floor(Math.random() * (GRID_COLUMNS - 2)) + 1;
     const cellKey = `${r}-${c}`;
@@ -120,39 +120,39 @@ const createInitialEnemies = (): EnemyData[] => {
       console.log(`Inimigo ${enemyId} criado na posição [${c}, ${r}]`);
     }
   }
-  
+
   console.log(`Criados ${newEnemies.length} inimigos após ${attemptsCount} tentativas`);
-  
+
   // Se não conseguimos criar todos os inimigos, forçamos a criação nas bordas
   if (newEnemies.length < INITIAL_ENEMY_COUNT) {
     const remainingEnemies = INITIAL_ENEMY_COUNT - newEnemies.length;
     console.log(`Forçando criação de ${remainingEnemies} inimigos restantes nas bordas`);
-    
+
     // Posições nas bordas (garantindo que não são blocos sólidos)
     const borderPositions = [];
     for (let r = 1; r < GRID_ROWS - 1; r += 2) {
       for (let c = 1; c < GRID_COLUMNS - 1; c += 2) {
-        if ((r === 1 || r === GRID_ROWS - 2 || c === 1 || c === GRID_COLUMNS - 2) && 
-            !occupiedCells.has(`${r}-${c}`)) {
-          borderPositions.push({r, c});
+        if ((r === 1 || r === GRID_ROWS - 2 || c === 1 || c === GRID_COLUMNS - 2) &&
+          !occupiedCells.has(`${r}-${c}`)) {
+          borderPositions.push({ r, c });
         }
       }
     }
-    
+
     // Embaralhar as posições de borda
     for (let i = borderPositions.length - 1; i > 0; i--) {
       const j = Math.floor(Math.random() * (i + 1));
       [borderPositions[i], borderPositions[j]] = [borderPositions[j], borderPositions[i]];
     }
-    
+
     // Adicionar inimigos restantes
     for (let i = 0; i < Math.min(remainingEnemies, borderPositions.length); i++) {
-      const {r, c} = borderPositions[i];
+      const { r, c } = borderPositions[i];
       const enemyId = `enemy-border-${i}-${Date.now()}-${Math.floor(Math.random() * 1000)}`;
-      newEnemies.push({ id: enemyId, row: r, col: c });      console.log(`Inimigo ${enemyId} forçado na posição de borda [${c}, ${r}]`);
+      newEnemies.push({ id: enemyId, row: r, col: c }); console.log(`Inimigo ${enemyId} forçado na posição de borda [${c}, ${r}]`);
     }
   }
-  
+
   console.log(`Total final de inimigos criados: ${newEnemies.length}`);
   return newEnemies;
   return newEnemies;
@@ -739,11 +739,11 @@ export default function Game() {
             activeBombs,
             GRID_COLUMNS,
             GRID_ROWS
-          );          let nextMove = { r: enemy.row, c: enemy.col };
-          
+          ); let nextMove = { r: enemy.row, c: enemy.col };
+
           // Chance de movimento aleatório para evitar que inimigos fiquem parados
           const useRandomMovement = Math.random() < 0.3; // 30% de chance de movimento aleatório
-          
+
           if (!useRandomMovement && path && path.length > 1) {
             // Movimento baseado no pathfinding
             nextMove = path[1];
@@ -765,7 +765,7 @@ export default function Game() {
               nextMove = { r: enemy.row, c: enemy.col }; // Reset para posição atual
             }
           }
-            // Se não temos um caminho ou decidimos usar movimento aleatório
+          // Se não temos um caminho ou decidimos usar movimento aleatório
           if (useRandomMovement || nextMove.r === enemy.row && nextMove.c === enemy.col) {
             // Movimento aleatório - mais agressivo e com mais opções
             const directions = [
@@ -774,37 +774,37 @@ export default function Game() {
               { r: 1, c: 0 },  // baixo
               { r: -1, c: 0 }, // cima
             ];
-            
+
             // Embaralhar as direções para aleatoriedade
             for (let i = directions.length - 1; i > 0; i--) {
               const j = Math.floor(Math.random() * (i + 1));
               [directions[i], directions[j]] = [directions[j], directions[i]];
             }
-            
+
             // Criar movimentos possíveis com base nas direções
             const possibleMoves: { r: number, c: number, isValid: boolean }[] = directions.map(dir => {
               const r = enemy.row + dir.r;
               const c = enemy.col + dir.c;
-              
+
               // Verificar se o movimento é válido
-              const isValid = 
+              const isValid =
                 r > 0 && r < GRID_ROWS - 1 &&
                 c > 0 && c < GRID_COLUMNS - 1 &&
                 // Permitir movimento para células vazias ou para a posição do jogador (se não estiver invencível)
-                (currentGridForPathfinding[r][c] === CellType.EMPTY || 
-                (playerPos[0] === c && playerPos[1] === r && !isPlayerInvincibleRef.current)) &&
+                (currentGridForPathfinding[r][c] === CellType.EMPTY ||
+                  (playerPos[0] === c && playerPos[1] === r && !isPlayerInvincibleRef.current)) &&
                 // Evitar bombas e outros inimigos
                 !activeBombs.some(b => b.row === r && b.col === c) &&
-                !currentEnemies.some(otherEnemy => 
+                !currentEnemies.some(otherEnemy =>
                   otherEnemy.id !== enemy.id && otherEnemy.row === r && otherEnemy.col === c
                 );
-              
+
               return { r, c, isValid };
             });
-            
+
             // Filtrar e ordenar movimentos válidos
             const validMoves = possibleMoves.filter(move => move.isValid);
-            
+
             if (validMoves.length > 0) {
               // Primeiro, tentar mover em direção ao jogador (se possível)
               const moveTowardsPlayer = validMoves.find(move => {
@@ -812,7 +812,7 @@ export default function Game() {
                 const currentDistanceToPlayer = Math.abs(enemy.row - playerPos[1]) + Math.abs(enemy.col - playerPos[0]);
                 return distanceToPlayer < currentDistanceToPlayer;
               });
-              
+
               if (moveTowardsPlayer && Math.random() > 0.3) { // 70% de chance de preferir movimento em direção ao jogador
                 nextMove = moveTowardsPlayer;
                 console.log(`Inimigo ${enemy.id} - Movimento direcionado para o jogador [${nextMove.c}, ${nextMove.r}]`);
@@ -826,16 +826,16 @@ export default function Game() {
               const destrutiveDirections = directions.map(dir => {
                 const r = enemy.row + dir.r;
                 const c = enemy.col + dir.c;
-                
+
                 // Verificar se o movimento é para um bloco destrutível (pode ser útil para o inimigo escapar)
-                const isDestructible = 
+                const isDestructible =
                   r > 0 && r < GRID_ROWS - 1 &&
                   c > 0 && c < GRID_COLUMNS - 1 &&
                   currentGridForPathfinding[r][c] === CellType.DESTRUCTIBLE_BLOCK;
-                
+
                 return { r, c, isDestructible };
               }).filter(move => move.isDestructible);
-              
+
               // Se encontramos blocos destrutíveis, o inimigo fica parado (esperando que um desses blocos seja destruído)
               if (destrutiveDirections.length > 0) {
                 console.log(`Inimigo ${enemy.id} - Esperando liberação de blocos destrutíveis ao redor`);

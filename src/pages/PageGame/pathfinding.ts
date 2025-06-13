@@ -16,7 +16,7 @@ function heuristic(a: Node, b: Node): number {
   return Math.abs(a.x - b.x) + Math.abs(a.y - b.y);
 }
 
-export function findPath(  grid: Grid,
+export function findPath(grid: Grid,
   start: { r: number; c: number }, // Alterado para usar r, c para consistência
   end: { r: number; c: number },   // Alterado para usar r, c para consistência
   bombs: BombData[], // Adicionado parâmetro para bombas ativas
@@ -28,20 +28,20 @@ export function findPath(  grid: Grid,
     console.error("Grid inválido ou vazio no pathfinding");
     return null;
   }
-  
+
   // Verificar se as posições de início e fim são válidas
   if (start.r < 0 || start.r >= gridHeight || start.c < 0 || start.c >= gridWidth ||
-      end.r < 0 || end.r >= gridHeight || end.c < 0 || end.c >= gridWidth) {
+    end.r < 0 || end.r >= gridHeight || end.c < 0 || end.c >= gridWidth) {
     console.error("Posições de início ou fim fora dos limites do grid");
     return null;
   }
-  
+
   // Verificar se a posição final não é um obstáculo intransponível
   if (grid[end.r][end.c] === CellType.SOLID_BLOCK) {
     // Se o destino for um bloco sólido, não há caminho possível
     return null;
   }
-  
+
   const openList: Node[] = [];
   const closedList: Set<string> = new Set();
   const nodes: Map<string, Node> = new Map();
@@ -101,7 +101,7 @@ export function findPath(  grid: Grid,
         continue;
       }      // Verificações de transposição para células que não são o destino final
       const isDestination = (x === end.c && y === end.r);
-      
+
       // Se a célula não for o destino, verificamos todas as restrições
       if (!isDestination) {
         // Verificar se a célula vizinha está ocupada por uma bomba
@@ -109,7 +109,7 @@ export function findPath(  grid: Grid,
         if (isBombLocation) {
           continue;
         }
-  
+
         const cellType = grid[y][x]; // Acessar grid com [row][col]
         if (
           cellType === CellType.SOLID_BLOCK ||
