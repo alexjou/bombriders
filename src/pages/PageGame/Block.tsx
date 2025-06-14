@@ -11,12 +11,12 @@ interface BlockProps {
 const Block: React.FC<BlockProps> = ({ position, type }) => {
   const meshRef = useRef<THREE.Mesh>(null!);
   const [hovered, setHovered] = useState(false);
-
   // Adiciona leves animações aos blocos destrutíveis
   useFrame((state) => {
     if (type === CellType.DESTRUCTIBLE_BLOCK && meshRef.current) {
-      // Leve flutuação para blocos destrutíveis
-      meshRef.current.position.y = position[1] + Math.sin(state.clock.elapsedTime * 1.5) * 0.03;
+      // Leve flutuação para blocos destrutíveis, considerando a posição já ajustada
+      const baseY = position[1] - (1 - blockHeight) / 2;
+      meshRef.current.position.y = baseY + Math.sin(state.clock.elapsedTime * 1.5) * 0.03;
     }
   });
 
@@ -27,22 +27,27 @@ const Block: React.FC<BlockProps> = ({ position, type }) => {
   let blockMetalness = 0.2;
   let blockHeight = 1; // Altura padrão do bloco
   let blockTexture = null;
-
   if (type === CellType.SOLID_BLOCK) {
     blockColor = '#505050'; // Cinza escuro mais atraente para blocos sólidos
     blockRoughness = 0.7;
     blockMetalness = 0.3;
-    blockHeight = 1;
+    blockHeight = 0.7; // Altura reduzida para blocos sólidos
   } else if (type === CellType.DESTRUCTIBLE_BLOCK) {
     blockColor = '#CD6839'; // Cor de tijolo mais vibrante para blocos destrutíveis
     blockRoughness = 0.8;
     blockMetalness = 0.1;
     blockEmissive = hovered ? new THREE.Color(0x331100) : new THREE.Color(0x110500);
-    blockHeight = 0.95; // Ligeiramente menor
-  }
+    blockHeight = 0.65; // Altura reduzida para blocos destrutíveis
+  }  // Ajustar a posição vertical para compensar a altura reduzida
+  const adjustedPosition: [number, number, number] = [
+    position[0],
+    position[1] - (1 - blockHeight) / 2, // Centraliza verticalmente com base na nova altura
+    position[2]
+  ];
+
   return (
     <mesh
-      position={position}
+      position={adjustedPosition}
       ref={meshRef}
       castShadow
       receiveShadow
