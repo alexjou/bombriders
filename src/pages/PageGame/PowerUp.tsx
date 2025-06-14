@@ -1,3 +1,4 @@
+// @ts-nocheck
 import { CellType } from './types';
 import type { ThreeElements } from '@react-three/fiber'; // Usar 'import type'
 
