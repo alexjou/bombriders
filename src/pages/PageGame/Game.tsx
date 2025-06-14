@@ -40,7 +40,7 @@ const INITIAL_ENEMY_COUNT = 5;
 const ENEMY_MOVE_INTERVAL = 1500; // Inimigos tentam se mover a cada 1.5 segundos
 
 // Novas constantes para a câmera
-const CAMERA_ALTITUDE = 20; // Altura ajustada para 16 conforme solicitado
+const CAMERA_ALTITUDE = 24; // Altura ajustada para 16 conforme solicitado
 // Para mover o grid para a direita da tela, a câmera se move para a esquerda do centro do grid.
 // Este fator determina o quanto a câmera se desloca para a esquerda, como uma fração da largura do grid.
 const CAMERA_X_SHIFT_FACTOR = 0.0; // Mantemos centralizado no eixo X
@@ -968,10 +968,9 @@ export default function Game() {
         lastMovementDirectionRef.current = 'horizontal';
       } else if (dy !== 0) {
         lastMovementDirectionRef.current = 'vertical';
-      }
-
-      // Executa o movimento se alguma tecla direcional estiver pressionada
+      }      // Executa o movimento se alguma tecla direcional estiver pressionada
       if (dx !== 0 || dy !== 0) {
+        console.log("Tentando mover jogador:", dx, dy);
         movePlayer(dx, dy);
       }
     };
