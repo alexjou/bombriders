@@ -1,4 +1,4 @@
-import { OrbitControls, OrthographicCamera } from '@react-three/drei'; // Adicionado Html
+import { OrbitControls, OrthographicCamera, PerspectiveCamera } from '@react-three/drei'; // Adicionado PerspectiveCamera
 import { useState, useEffect, useCallback, useRef } from 'react'; // Adicionado useRef
 import Block from './Block';
 import Player from './Player';
@@ -40,13 +40,13 @@ const INITIAL_ENEMY_COUNT = 5;
 const ENEMY_MOVE_INTERVAL = 1500; // Inimigos tentam se mover a cada 1.5 segundos
 
 // Novas constantes para a câmera
-const CAMERA_ALTITUDE = 20;
+const CAMERA_ALTITUDE = 26; // Aumentado para ter uma vista mais elevada e inclinada
 // Para mover o grid para a direita da tela, a câmera se move para a esquerda do centro do grid.
 // Este fator determina o quanto a câmera se desloca para a esquerda, como uma fração da largura do grid.
 const CAMERA_X_SHIFT_FACTOR = 0.0; // MODIFICADO: Para grid à esquerda
 // Fator similar para o deslocamento vertical da câmera.
 // Negativo para a câmera ir "para baixo" do centro do grid, fazendo o grid aparecer "em cima".
-const CAMERA_Z_SHIFT_FACTOR = 0.1; // MODIFICADO: Para descer mais o grid (era -0.3)
+const CAMERA_Z_SHIFT_FACTOR = -0.25; // MODIFICADO: Para uma visão mais inclinada
 
 interface ExplosionData {
   id: string;
@@ -319,7 +319,7 @@ export default function Game() {
 
   // Calcular a posição X e Z da câmera com base nos fatores de deslocamento
   const cameraX = gridCenterX - (GRID_COLUMNS * CELL_SIZE * CAMERA_X_SHIFT_FACTOR);
-  const cameraZ = gridCenterZ - (GRID_ROWS * CELL_SIZE * CAMERA_Z_SHIFT_FACTOR);
+  const cameraZ = gridCenterZ + (GRID_ROWS * CELL_SIZE * CAMERA_Z_SHIFT_FACTOR) + 10; // Adicionado offset para posicionar atrás do grid
 
   // Acessar as funções do gameStore
   const {
@@ -534,7 +534,7 @@ export default function Game() {
     for (const cell of affectedCells) {
       for (const otherBomb of bombsStillInPlay) {
         if (otherBomb.col === cell.col && otherBomb.row === cell.row) {
-          // A checagem de recentlyExplodedOrScheduledBombIdsRef será feita no início da chamada recursiva.
+          // A checagem de recentlyExplodedOrScheduledBombIds será feita no início da chamada recursiva.
           console.log(`Bomba ${otherBomb.id} em [${otherBomb.col},${otherBomb.row}] atingida por ${bombToExplode.id}. Agendando sua explosão.`);
 
           const chainTimeoutId = window.setTimeout(() => {
@@ -707,7 +707,7 @@ export default function Game() {
     playerPositionRef.current = [newCol, newRow];
     // Nota: não precisamos de um setTimeout aqui, o callback onMovementComplete
     // será chamado automaticamente quando a animação visual terminar
-  }, [setPlayerBombRange, setPlayerMaxBombs, setGrid, setPlayerPosition, setPlayerTargetPosition, setIsPlayerMoving, setPlayerLives, setIsPlayerInvincible, setIsGameOver, get3DPosition, gameState]);
+  }, [setPlayerBombRange, setPlayerMaxBombs, setGrid, setPlayerPosition, setPlayerTargetPosition, setIsPlayerMoving, setPlayerLives, setIsPlayerInvincible, setIsGameOver, get3DPosition]);
 
   // Função chamada quando o movimento do jogador é concluído
   const handlePlayerMovementComplete = useCallback(() => {
@@ -1045,16 +1045,25 @@ export default function Game() {
   return (
     <>      {/* Componente HTML removido porque estava bloqueando interações com botões */}
 
-      {/* Cena 3D - só renderiza elementos do jogo quando o estado for 'playing', 'paused', 'gameOver' ou 'levelComplete' */}
-      <OrthographicCamera
+      {/* Cena 3D - só renderiza elementos do jogo quando o estado for 'playing', 'paused', 'gameOver' ou 'levelComplete' */}      {/* Configuração de câmera similar ao código de referência */}
+      <PerspectiveCamera
         makeDefault
-        zoom={35} // Este valor de zoom pode precisar de ajuste fino posteriormente
-        position={[cameraX, CAMERA_ALTITUDE, cameraZ]}
-        rotation={[-Math.PI / 2, 0, 0]} // Garante a visão de cima para baixo
-      />      <OrbitControls
-        target={[cameraX, 0, cameraZ]} // Define o alvo da câmera para o ponto abaixo dela no plano do grid
-        enableRotate={false} // Desabilita a rotação da câmera pelo usuário
-        enablePan={true} // Permite o pan (arrastar) por enquanto. Pode ser definido como false se o grid precisar ser totalmente fixo.
+        fov={60} // Campo de visão similar ao código original
+        aspect={window.innerWidth / window.innerHeight}
+        near={0.1}
+        far={1000}
+        position={[
+          cameraX, 
+          CAMERA_ALTITUDE,
+          cameraZ
+        ]}
+      />
+
+      <OrbitControls
+        target={[gridCenterX, 0, gridCenterZ]} // Olhar para o centro do grid
+        enableRotate={false} // Desabilita rotação para manter o ângulo fixo
+        enablePan={false} // Desabilita movimentação lateral
+        enableZoom={false} // Desabilita zoom para manter a vista fixa
       />
       {/* @ts-ignore - ambientLight é um componente válido do Three.js/React-Three-Fiber */}
       <ambientLight intensity={0.8} />

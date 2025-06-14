@@ -201,94 +201,143 @@ const Player: React.FC<PlayerProps> = ({
     }
   });
   return (
-    <group ref={meshRef} position={currentPosition.current.toArray()}>
-      {/* Efeito de sombra projetada */}
-      <mesh
-        position={[0, -0.48, 0]}
-        rotation={[-Math.PI / 2, 0, 0]}
-        receiveShadow
-      >
-        <circleGeometry args={[0.4, 24]} />
-        <meshBasicMaterial
-          color="#000000"
-          opacity={0.35}
-          transparent={true}
-          depthWrite={false}
-        />
-      </mesh>
+    <group
+      ref={meshRef}
+      position={[currentPosition.current.x, currentPosition.current.y, currentPosition.current.z]}
+      rotation={[rotationRef.current.x, rotationRef.current.y, rotationRef.current.z]}
+    >
+      {/* Corpo principal - Troca da esfera para um conjunto de elementos detalhados */}
+      <group>
+        {/* Corpo base */}
+        <mesh castShadow receiveShadow position={[0, 0.3, 0]} scale={[0.4, 0.5, 0.25]}>
+          <boxGeometry />
+          <meshStandardMaterial ref={materialRef} color="#d32f2f" roughness={0.2} metalness={0.1} />
+        </mesh>
 
-      {/* Corpo principal do jogador */}
-      <mesh
-        castShadow
-        receiveShadow
-        rotation={[rotationRef.current.x, rotationRef.current.y, rotationRef.current.z]}
-      >
-        <capsuleGeometry args={[0.35, 0.5, 6, 20]} />
-        <meshStandardMaterial
-          ref={materialRef}
-          color={isInvincible ? "#FFD700" : "#FFA500"} // Dourado quando invencível
-          roughness={0.25}
-          metalness={isInvincible ? 0.7 : 0.25} // Mais metálico quando invencível
-          emissive={isInvincible ? "#FFFF00" : "#FF4500"}
-          emissiveIntensity={isInvincible ? 0.4 : (isMoving.current ? 0.15 : 0.05)}
-        />
-      </mesh>
-
-      {/* Efeito de brilho ao redor quando invencível */}
-      {isInvincible && (
-        <mesh>
-          <sphereGeometry args={[0.55, 16, 16]} />
-          <meshBasicMaterial
-            color="#FFFF00"
-            opacity={0.2}
-            transparent={true}
-            depthWrite={false}
+        {/* Cabeça */}
+        <mesh castShadow receiveShadow position={[0, 0.65, 0]}>
+          <sphereGeometry args={[0.25, 32, 32]} />
+          <meshStandardMaterial color="#ffe0bd" roughness={0.3} metalness={0.05} />
+          
+          {/* Olhos */}
+          <mesh position={[-0.08, 0.03, 0.22]}>
+            <sphereGeometry args={[0.05, 16, 16]} />
+            <meshStandardMaterial color="#ffffff" roughness={0.1} />
+            
+            {/* Íris */}
+            <mesh position={[0, 0, 0.02]}>
+              <sphereGeometry args={[0.03, 16, 16]} />
+              <meshStandardMaterial color="#8b0000" roughness={0.1} />
+              
+              {/* Pupila */}
+              <mesh position={[0, 0, 0.01]}>
+                <sphereGeometry args={[0.015, 16, 16]} />
+                <meshStandardMaterial color="#000000" roughness={0.1} />
+              </mesh>
+            </mesh>
+          </mesh>
+          
+          {/* Segundo olho */}
+          <mesh position={[0.08, 0.03, 0.22]}>
+            <sphereGeometry args={[0.05, 16, 16]} />
+            <meshStandardMaterial color="#ffffff" roughness={0.1} />
+            
+            {/* Íris */}
+            <mesh position={[0, 0, 0.02]}>
+              <sphereGeometry args={[0.03, 16, 16]} />
+              <meshStandardMaterial color="#8b0000" roughness={0.1} />
+              
+              {/* Pupila */}
+              <mesh position={[0, 0, 0.01]}>
+                <sphereGeometry args={[0.015, 16, 16]} />
+                <meshStandardMaterial color="#000000" roughness={0.1} />
+              </mesh>
+            </mesh>
+          </mesh>
+        </mesh>
+        
+        {/* Chapéu */}
+        <mesh castShadow receiveShadow position={[0, 0.75, 0]}>
+          <cylinderGeometry args={[0.35, 0.38, 0.05, 32]} />
+          <meshStandardMaterial 
+            color="#8b0000" 
+            emissive="#ff4500"
+            emissiveIntensity={0.8} 
+            roughness={0.3} 
+            metalness={0.5} 
           />
         </mesh>
-      )}
-
-      {/* Adiciona olhos para dar personalidade e orientação visual */}
-      <mesh position={[0.15, 0.3, -0.29]} scale={0.1}>
-        <sphereGeometry args={[1, 16, 16]} />
-        <meshStandardMaterial color="#FFFFFF" />
-        <mesh position={[0, 0, -0.5]} scale={0.6}>
-          <sphereGeometry args={[1, 16, 16]} />
-          <meshStandardMaterial color="#000000" />
-        </mesh>
-      </mesh>
-      <mesh position={[-0.15, 0.3, -0.29]} scale={0.1}>
-        <sphereGeometry args={[1, 16, 16]} />
-        <meshStandardMaterial color="#FFFFFF" />
-        <mesh position={[0, 0, -0.5]} scale={0.6}>
-          <sphereGeometry args={[1, 16, 16]} />
-          <meshStandardMaterial color="#000000" />
-        </mesh>
-      </mesh>
-
-      {/* Adiciona detalhes para melhorar a aparência do personagem */}
-      <mesh position={[0, 0.4, 0]} rotation={[0, 0, 0]} scale={[0.3, 0.1, 0.2]}>
-        <boxGeometry />
-        <meshStandardMaterial color="#CC6600" />
-      </mesh>
-
-      {/* Efeito de rastro/energia quando em movimento */}
-      {isMoving.current && (
-        <mesh
-          position={[0, 0.1, 0.3]}
-          rotation={[0, 0, Math.sin(animTime.current * 10) * 0.2]}
-          scale={[0.5, 0.2, 0.1]}
-        >
-          <planeGeometry />
-          <meshBasicMaterial
-            color="#FFAA22"
-            transparent={true}
-            opacity={0.5}
-            side={THREE.DoubleSide}
+        <mesh castShadow receiveShadow position={[0, 0.85, 0]}>
+          <cylinderGeometry args={[0.2, 0.25, 0.2, 32]} />
+          <meshStandardMaterial 
+            color="#8b0000" 
+            emissive="#ff4500"
+            emissiveIntensity={0.8} 
+            roughness={0.3} 
+            metalness={0.5} 
           />
         </mesh>
-      )}
 
-      {/* Sombra no chão para melhorar sensação de posicionamento */}
+        {/* Cinto */}
+        <mesh castShadow receiveShadow position={[0, 0.05, 0]} scale={[0.45, 0.08, 0.15]}>
+          <boxGeometry />
+          <meshStandardMaterial color="#333333" roughness={0.5} metalness={0.2} />
+        </mesh>
+        
+        {/* Fivela */}
+        <mesh castShadow receiveShadow position={[0, 0.05, 0.075]} scale={[0.1, 0.08, 0.05]}>
+          <boxGeometry />
+          <meshStandardMaterial 
+            color="#ffc107" 
+            emissive="#ffa000"
+            emissiveIntensity={0.5} 
+            roughness={0.1} 
+            metalness={0.8} 
+          />
+        </mesh>
+
+        {/* Pernas */}
+        <mesh castShadow receiveShadow position={[-0.1, -0.2, 0]} scale={[0.18, 0.4, 0.2]}>
+          <boxGeometry />
+          <meshStandardMaterial color="#d32f2f" roughness={0.2} metalness={0.1} />
+        </mesh>
+        <mesh castShadow receiveShadow position={[0.1, -0.2, 0]} scale={[0.18, 0.4, 0.2]}>
+          <boxGeometry />
+          <meshStandardMaterial color="#d32f2f" roughness={0.2} metalness={0.1} />
+        </mesh>
+
+        {/* Botas */}
+        <mesh castShadow receiveShadow position={[-0.1, -0.4, 0.02]} scale={[0.2, 0.15, 0.25]}>
+          <boxGeometry />
+          <meshStandardMaterial color="#333333" roughness={0.5} metalness={0.2} />
+        </mesh>
+        <mesh castShadow receiveShadow position={[0.1, -0.4, 0.02]} scale={[0.2, 0.15, 0.25]}>
+          <boxGeometry />
+          <meshStandardMaterial color="#333333" roughness={0.5} metalness={0.2} />
+        </mesh>
+
+        {/* Braços */}
+        <mesh castShadow receiveShadow position={[-0.3, 0.3, 0]} scale={[0.15, 0.4, 0.15]}>
+          <boxGeometry />
+          <meshStandardMaterial color="#d32f2f" roughness={0.2} metalness={0.1} />
+        </mesh>
+        <mesh castShadow receiveShadow position={[0.3, 0.3, 0]} scale={[0.15, 0.4, 0.15]}>
+          <boxGeometry />
+          <meshStandardMaterial color="#d32f2f" roughness={0.2} metalness={0.1} />
+        </mesh>
+
+        {/* Mãos */}
+        <mesh castShadow receiveShadow position={[-0.3, 0.05, 0]}>
+          <sphereGeometry args={[0.1, 16, 16]} />
+          <meshStandardMaterial color="#333333" roughness={0.5} metalness={0.2} />
+        </mesh>
+        <mesh castShadow receiveShadow position={[0.3, 0.05, 0]}>
+          <sphereGeometry args={[0.1, 16, 16]} />
+          <meshStandardMaterial color="#333333" roughness={0.5} metalness={0.2} />
+        </mesh>
+      </group>
+
+      {/* Sombra no chão */}
       <mesh
         position={[0, -0.49, 0]}
         rotation={[-Math.PI / 2, 0, 0]}
