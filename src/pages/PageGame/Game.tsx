@@ -1,4 +1,4 @@
-import { OrbitControls, OrthographicCamera, PerspectiveCamera } from '@react-three/drei'; // Adicionado PerspectiveCamera
+import { OrbitControls, PerspectiveCamera } from '@react-three/drei'; // Adicionado PerspectiveCamera
 import { useState, useEffect, useCallback, useRef } from 'react'; // Adicionado useRef
 import Block from './Block';
 import Player from './Player';
@@ -40,13 +40,13 @@ const INITIAL_ENEMY_COUNT = 5;
 const ENEMY_MOVE_INTERVAL = 1500; // Inimigos tentam se mover a cada 1.5 segundos
 
 // Novas constantes para a câmera
-const CAMERA_ALTITUDE = 26; // Aumentado para ter uma vista mais elevada e inclinada
+const CAMERA_ALTITUDE = 20; // Altura ajustada para 16 conforme solicitado
 // Para mover o grid para a direita da tela, a câmera se move para a esquerda do centro do grid.
 // Este fator determina o quanto a câmera se desloca para a esquerda, como uma fração da largura do grid.
-const CAMERA_X_SHIFT_FACTOR = 0.0; // MODIFICADO: Para grid à esquerda
+const CAMERA_X_SHIFT_FACTOR = 0.0; // Mantemos centralizado no eixo X
 // Fator similar para o deslocamento vertical da câmera.
 // Negativo para a câmera ir "para baixo" do centro do grid, fazendo o grid aparecer "em cima".
-const CAMERA_Z_SHIFT_FACTOR = -0.25; // MODIFICADO: Para uma visão mais inclinada
+const CAMERA_Z_SHIFT_FACTOR = 0.0; // Ajustado para zero para garantir que o jogador possa se mover corretamente
 
 interface ExplosionData {
   id: string;
@@ -314,12 +314,11 @@ export default function Game() {
   useEffect(() => {
     isGameOverRef.current = isGameOver;
   }, [isGameOver]);
-  const gridCenterX = (GRID_COLUMNS * CELL_SIZE) / 2;
-  const gridCenterZ = (GRID_ROWS * CELL_SIZE) / 2;
+  const gridCenterX = (GRID_COLUMNS * CELL_SIZE) / 2; const gridCenterZ = (GRID_ROWS * CELL_SIZE) / 2;
 
   // Calcular a posição X e Z da câmera com base nos fatores de deslocamento
-  const cameraX = gridCenterX - (GRID_COLUMNS * CELL_SIZE * CAMERA_X_SHIFT_FACTOR);
-  const cameraZ = gridCenterZ + (GRID_ROWS * CELL_SIZE * CAMERA_Z_SHIFT_FACTOR) + 10; // Adicionado offset para posicionar atrás do grid
+  const cameraX = gridCenterX; // Centralizamos a câmera horizontalmente
+  const cameraZ = gridCenterZ + 12; // Mantemos um offset para posicionar a câmera atrás do grid para ver melhor
 
   // Acessar as funções do gameStore
   const {
@@ -1045,22 +1044,21 @@ export default function Game() {
   return (
     <>      {/* Componente HTML removido porque estava bloqueando interações com botões */}
 
-      {/* Cena 3D - só renderiza elementos do jogo quando o estado for 'playing', 'paused', 'gameOver' ou 'levelComplete' */}      {/* Configuração de câmera similar ao código de referência */}
-      <PerspectiveCamera
+      {/* Cena 3D - só renderiza elementos do jogo quando o estado for 'playing', 'paused', 'gameOver' ou 'levelComplete' */}      {/* Configuração de câmera similar ao código de referência */}      <PerspectiveCamera
         makeDefault
-        fov={60} // Campo de visão similar ao código original
+        fov={50} // Campo de visão um pouco mais fechado para compensar a menor altura
         aspect={window.innerWidth / window.innerHeight}
         near={0.1}
         far={1000}
         position={[
-          cameraX, 
+          cameraX,
           CAMERA_ALTITUDE,
           cameraZ
         ]}
       />
 
       <OrbitControls
-        target={[gridCenterX, 0, gridCenterZ]} // Olhar para o centro do grid
+        target={[gridCenterX, 0, gridCenterZ - 2]} // Ajustado o ponto de mira para ver o jogo de um ângulo melhor
         enableRotate={false} // Desabilita rotação para manter o ângulo fixo
         enablePan={false} // Desabilita movimentação lateral
         enableZoom={false} // Desabilita zoom para manter a vista fixa

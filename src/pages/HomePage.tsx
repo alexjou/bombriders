@@ -40,7 +40,7 @@ const characterData = [
   },
   {
     id: 'raptoraX',
-    name: 'RaptoraX',
+    name: 'Weet',
     element: 'Água',
     elementColor: 'blue',
     description: 'Ágil e inteligente, especialista em missões furtivas e sabotagem.',
