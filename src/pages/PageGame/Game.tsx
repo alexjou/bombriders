@@ -40,7 +40,7 @@ const INITIAL_ENEMY_COUNT = 5;
 const ENEMY_MOVE_INTERVAL = 1500; // Inimigos tentam se mover a cada 1.5 segundos
 
 // Novas constantes para a câmera
-const CAMERA_ALTITUDE = 24; // Altura ajustada para 16 conforme solicitado
+const CAMERA_ALTITUDE = 14; // Altura ajustada para 16 conforme solicitado
 // Para mover o grid para a direita da tela, a câmera se move para a esquerda do centro do grid.
 // Este fator determina o quanto a câmera se desloca para a esquerda, como uma fração da largura do grid.
 const CAMERA_X_SHIFT_FACTOR = 0.0; // Mantemos centralizado no eixo X
@@ -314,11 +314,12 @@ export default function Game() {
   useEffect(() => {
     isGameOverRef.current = isGameOver;
   }, [isGameOver]);
-  const gridCenterX = (GRID_COLUMNS * CELL_SIZE) / 2; const gridCenterZ = (GRID_ROWS * CELL_SIZE) / 2;
+  const gridCenterX = (GRID_COLUMNS * CELL_SIZE) / 2;
+  const gridCenterZ = (GRID_ROWS * CELL_SIZE) / 1.6;
 
   // Calcular a posição X e Z da câmera com base nos fatores de deslocamento
   const cameraX = gridCenterX; // Centralizamos a câmera horizontalmente
-  const cameraZ = gridCenterZ + 12; // Mantemos um offset para posicionar a câmera atrás do grid para ver melhor
+  const cameraZ = gridCenterZ + 10; // Mantemos um offset para posicionar a câmera atrás do grid para ver melhor
 
   // Acessar as funções do gameStore
   const {
@@ -1214,7 +1215,7 @@ export default function Game() {
       />
 
       <OrbitControls
-        target={[gridCenterX, 0, gridCenterZ - 2]} // Ajustado o ponto de mira para ver o jogo de um ângulo melhor
+        target={[gridCenterX, 0, gridCenterZ]} // Ajustado o ponto de mira para ver o jogo de um ângulo melhor
         enableRotate={false} // Desabilita rotação para manter o ângulo fixo
         enablePan={false} // Desabilita movimentação lateral
         enableZoom={false} // Desabilita zoom para manter a vista fixa
