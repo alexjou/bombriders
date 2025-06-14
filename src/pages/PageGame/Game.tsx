@@ -376,12 +376,13 @@ export default function Game() {
       // Limpar set de bombas
       recentlyExplodedOrScheduledBombIdsRef.current.clear();
     }
-  }, [gameState]); // Dependência no estado do jogo do store
-
-  const get3DPosition = useCallback((col: number, row: number): [number, number, number] => {
+  }, [gameState]); // Dependência no estado do jogo do store  
+    const get3DPosition = useCallback((col: number, row: number): [number, number, number] => {
+    // Posição consistente independente da altura da câmera
+    // Aumentando significativamente a altura do personagem para garantir visibilidade e movimentação
     return [
       col * CELL_SIZE,
-      CELL_SIZE / 2,
+      CELL_SIZE * 0.7, // Aumentado para garantir visibilidade com câmera baixa
       row * CELL_SIZE
     ];
   }, []);
@@ -592,11 +593,24 @@ export default function Game() {
     setBombs(prevBombs => [...prevBombs, newBomb]);
     console.log(`Bomba ${newBombId} colocada em [${playerCol}, ${playerRow}] com range ${playerBombRangeRef.current}`);
 
-  }, [playerPosition, initiateExplosionChain, gameState, /* Adicionar playerMaxBombsRef e playerBombRangeRef como dependências se não forem estáveis, mas refs são */]);
-  const movePlayer = useCallback((dx: number, dy: number) => {
-    if (isGameOverRef.current || gameState !== 'playing') return; // Impede movimento se o jogo acabou ou não está no estado 'playing'
+  }, [playerPosition, initiateExplosionChain, gameState, /* Adicionar playerMaxBombsRef e playerBombRangeRef como dependências se não forem estáveis, mas refs são */]);  const movePlayer = useCallback((dx: number, dy: number) => {
+    console.log("=== MOVIMENTO DO JOGADOR ===");
+    console.log("movePlayer chamado com:", dx, dy);
+    console.log("Estado do jogo:", gameState);
+    console.log("isGameOverRef.current:", isGameOverRef.current);
+    
+    // CORREÇÃO: Remover esta verificação para permitir movimento em qualquer estado
+    // Isso garante que o movimento funcione na inicialização
+    /*
+    if (isGameOverRef.current || gameState !== 'playing') {
+      console.log("Movimento bloqueado: jogo acabou ou não está em estado 'playing'");
+      return; // Impede movimento se o jogo acabou ou não está no estado 'playing'
+    }
+    */
+    
     // Se o jogador está em movimento, armazena o último comando de direção para sensação de jogo mais responsivo
     if (isPlayerMovingRef.current) {
+      console.log("Movimento bloqueado: jogador já está em movimento");
       // Armazenar a última direção solicitada para executar quando o movimento atual terminar
       // (Esta parte poderia ser expandida com um sistema de buffer de movimentos)
       return; // Por enquanto apenas ignora novos comandos durante movimento
@@ -607,12 +621,13 @@ export default function Game() {
     // Calcula a nova posição
     const currentPos = playerPositionRef.current;
     const newCol = currentPos[0] + dx;
-    const newRow = currentPos[1] + dy;
-
-    // Verifica se a nova posição é válida
+    const newRow = currentPos[1] + dy;    // Verifica se a nova posição é válida
     if (newRow < 0 || newRow >= GRID_ROWS || newCol < 0 || newCol >= GRID_COLUMNS) {
+      console.log("Movimento bloqueado: posição fora do grid");
       return; // Posição fora do grid
     }
+    
+    console.log("Verificando célula em:", newRow, newCol);
 
     const targetCellType = gridRef.current[newRow][newCol]; // Usa gridRef para a lógica de coleta
 
@@ -637,14 +652,18 @@ export default function Game() {
         return nextGrid;
       });
       collectedPowerUp = true;
-    }
-
-    // Verifica colisões se não coletou power-up
+    }    // Verifica colisões se não coletou power-up
     if (!collectedPowerUp) {
+      console.log("Tipo da célula alvo:", targetCellType);
+      
       if (targetCellType === CellType.SOLID_BLOCK || targetCellType === CellType.DESTRUCTIBLE_BLOCK) {
+        console.log("Movimento bloqueado: colisão com bloco");
         return; // Colisão com bloco
       }
-      if (bombsRef.current.some(b => b.col === newCol && b.row === newRow)) {
+      
+      const temBomba = bombsRef.current.some(b => b.col === newCol && b.row === newRow);
+      if (temBomba) {
+        console.log("Movimento bloqueado: colisão com bomba");
         return; // Colisão com bomba
       }
       if (enemiesRef.current.some(enemy => enemy.col === newCol && enemy.row === newRow)) {
@@ -685,30 +704,49 @@ export default function Game() {
         }
         return; // Jogador não se move se colidir com inimigo
       }
-    }
-
-    // Se chegou aqui, o movimento é válido (ou um power-up foi coletado)
+    }    // Se chegou aqui, o movimento é válido (ou um power-up foi coletado)
+    console.log("Movimento válido! Atualizando estado do jogador");
+    
     // Marca o jogador como em movimento para iniciar a animação
     setIsPlayerMoving(true);
-    isPlayerMovingRef.current = true;
-
-    // Define a nova posição alvo para o jogador (para animação visual)
-    const [targetX, targetY, targetZ] = get3DPosition(newCol, newRow);
-    setPlayerTargetPosition([targetX, targetY, targetZ]);
-
-    // Atualiza a posição lógica imediatamente para que a lógica do jogo funcione corretamente
+    isPlayerMovingRef.current = true;    // MOVIMENTO DO JOGADOR - AJUSTE IMPORTANTE
+    // Primeiro atualizamos a posição lógica para que a lógica do jogo funcione corretamente
     setPlayerPosition([newCol, newRow]);
     playerPositionRef.current = [newCol, newRow];
+    console.log("Nova posição lógica:", [newCol, newRow]);
+    
+    // Depois definimos a nova posição alvo para o jogador (para animação visual)
+    const [targetX, targetY, targetZ] = get3DPosition(newCol, newRow);
+    console.log("Posição alvo 3D:", targetX, targetY, targetZ);
+    
+    // Definir o target position é crucial para o movimento visual
+    setPlayerTargetPosition([targetX, targetY, targetZ]);
+    console.log("setPlayerTargetPosition chamado com:", [targetX, targetY, targetZ]);
+    
     // Nota: não precisamos de um setTimeout aqui, o callback onMovementComplete
     // será chamado automaticamente quando a animação visual terminar
-  }, [setPlayerBombRange, setPlayerMaxBombs, setGrid, setPlayerPosition, setPlayerTargetPosition, setIsPlayerMoving, setPlayerLives, setIsPlayerInvincible, setIsGameOver, get3DPosition]);
-
-  // Função chamada quando o movimento do jogador é concluído
+  }, [setPlayerBombRange, setPlayerMaxBombs, setGrid, setPlayerPosition, setPlayerTargetPosition, setIsPlayerMoving, setPlayerLives, setIsPlayerInvincible, setIsGameOver, get3DPosition]);  // Função chamada quando o movimento do jogador é concluído
   const handlePlayerMovementComplete = useCallback(() => {
-    // O movimento visual foi concluído, o Player já está no destino correto
+    console.log("=== MOVIMENTO CONCLUÍDO ===");
+    console.log("handlePlayerMovementComplete chamado - movimento visual concluído");
+    
+    // IMPORTANTE: Garantir que o estado do jogador seja atualizado corretamente
     setIsPlayerMoving(false);
-    isPlayerMovingRef.current = false;
+    if (isPlayerMovingRef.current) {
+      isPlayerMovingRef.current = false;
+      console.log("isPlayerMovingRef.current atualizado para:", false);
+    }
+    
+    // Limpa a posição alvo para permitir novos movimentos
     setPlayerTargetPosition(undefined);
+    
+    // Forçar liberação do estado para permitir novo movimento imediatamente
+    setTimeout(() => {
+      if (isPlayerMovingRef.current) {
+        console.log("CORREÇÃO: Forçando liberação do estado de movimento");
+        isPlayerMovingRef.current = false;
+      }
+    }, 50);
   }, []);
   // Efeito para movimentar inimigos
   useEffect(() => {    // Não executa se o jogo estiver finalizado ou se não estiver no estado 'playing'
@@ -1054,13 +1092,17 @@ export default function Game() {
   const keysPressed = useRef<{ [key: string]: boolean }>({});
   // Ref para armazenar o ID do intervalo de processamento de teclas
   const keyProcessIntervalRef = useRef<number | null>(null);
-  // Ref para rastrear a última direção de movimento (para alternar em movimentos diagonais)
-  const lastMovementDirectionRef = useRef<'horizontal' | 'vertical'>('horizontal');
+  // Ref para rastrear a última direção de movimento (para alternar em movimentos diagonais)  const lastMovementDirectionRef = useRef<'horizontal' | 'vertical'>('horizontal');
+    // useEffect separado só para configurar os event listeners de teclado
+  // Isso garante que eles sejam registrados o mais cedo possível na inicialização
   useEffect(() => {
+    console.log("INICIALIZANDO EVENT LISTENERS DE TECLADO");
     // Handler para tecla pressionada
     const handleKeyDown = (event: KeyboardEvent) => {
       if (isGameOverRef.current || gameState !== 'playing') return;
       const key = event.key.toLowerCase();
+
+      console.log("Tecla pressionada:", key);
 
       // Registra a tecla como pressionada
       keysPressed.current[key] = true;
@@ -1070,6 +1112,29 @@ export default function Game() {
         event.preventDefault();
         placeBomb();
       }
+        // Movimento direto do personagem com resposta instantânea
+      // Melhorado para garantir resposta imediata independente da inicialização
+      // Para teclas direcionais, tenta movimentar o jogador imediatamente
+      if (key === 'arrowup' || key === 'w') {
+        console.log("MOVIMENTO: CIMA");
+        movePlayer(0, -1);
+        event.preventDefault();
+      }
+      if (key === 'arrowdown' || key === 's') {
+        console.log("MOVIMENTO: BAIXO");
+        movePlayer(0, 1);
+        event.preventDefault();
+      }
+      if (key === 'arrowleft' || key === 'a') {
+        console.log("MOVIMENTO: ESQUERDA");
+        movePlayer(-1, 0);
+        event.preventDefault();
+      }
+      if (key === 'arrowright' || key === 'd') {
+        console.log("MOVIMENTO: DIREITA");
+        movePlayer(1, 0);
+        event.preventDefault();
+      }
     };
 
     // Handler para tecla liberada
@@ -1077,12 +1142,19 @@ export default function Game() {
       const key = event.key.toLowerCase();
       // Remove a tecla da lista de teclas pressionadas
       delete keysPressed.current[key];
-    };    // Função para processar as teclas pressionadas periodicamente
+    };
+    
+    // Função para processar as teclas pressionadas periodicamente
     const processKeys = () => {
       if (isGameOverRef.current || gameState !== 'playing') return;
 
       // Não processa teclas se o jogador já está em movimento
-      if (isPlayerMovingRef.current) return;      // Processa as teclas de movimento permitindo movimentos tanto horizontais quanto verticais
+      if (isPlayerMovingRef.current) {
+        console.log("Jogador ainda em movimento, ignorando teclas");
+        return;
+      }
+      
+      // Processa as teclas de movimento permitindo movimentos tanto horizontais quanto verticais
       // Mas executa apenas um por vez, priorizando o movimento que não foi feito recentemente
       let dx = 0;
       let dy = 0;
@@ -1099,30 +1171,17 @@ export default function Game() {
         dx = -1;
       } else if (keysPressed.current['arrowright'] || keysPressed.current['d']) {
         dx = 1;
-      }
-
-      // Se ambas direções estão sendo pressionadas, escolhe uma baseada na última movida
-      // A última direção movida é armazenada na ref lastMovementDirection
+      }      // Simplificando a lógica de movimento para evitar problemas com referências
+      // Prioriza o movimento vertical quando ambas as direções são pressionadas
       if (dx !== 0 && dy !== 0) {
-        // Se ambas direções estão pressionadas, alterna entre elas para permitir
-        // um "movimento diagonal" intercalado (primeiro uma direção, depois a outra)
-        const lastDirection = lastMovementDirectionRef.current;
-
-        // Alterna a direção a cada chamada
-        if (lastDirection === 'horizontal') {
-          dx = 0; // Move verticalmente desta vez
-          lastMovementDirectionRef.current = 'vertical';
-        } else {
-          dy = 0; // Move horizontalmente desta vez
-          lastMovementDirectionRef.current = 'horizontal';
-        }
-      } else if (dx !== 0) {
-        lastMovementDirectionRef.current = 'horizontal';
-      } else if (dy !== 0) {
-        lastMovementDirectionRef.current = 'vertical';
-      }      // Executa o movimento se alguma tecla direcional estiver pressionada
+        // Prioriza movimento vertical
+        dx = 0;
+      }// Executa o movimento se alguma tecla direcional estiver pressionada
       if (dx !== 0 || dy !== 0) {
         console.log("Tentando mover jogador:", dx, dy);
+        console.log("isPlayerMovingRef.current:", isPlayerMovingRef.current);
+        console.log("Teclas pressionadas:", Object.keys(keysPressed.current));
+        console.log("posição atual:", playerPositionRef.current);
         movePlayer(dx, dy);
       }
     };
@@ -1140,9 +1199,9 @@ export default function Game() {
       if (keyProcessIntervalRef.current !== null) {
         clearInterval(keyProcessIntervalRef.current);
         keyProcessIntervalRef.current = null;
-      }
-    };
+      }    };
   }, [movePlayer, placeBomb, isGameOverRef, isPlayerMovingRef, gameState]);
+  
   useEffect(() => {
     return () => {
       bombsRef.current.forEach(bomb => {
@@ -1262,14 +1321,12 @@ export default function Game() {
               position={exp.position}
               onComplete={() => handleExplosionComplete(exp.id)}
             />
-          ))}
-
-          {!isGameOver && (
+          ))}          {!isGameOver && (
             <Player
               gridPosition={get3DPosition(playerPosition[0], playerPosition[1])}
               targetPosition={playerTargetPosition}
               isInvincible={isPlayerInvincible}
-              moveSpeed={7.5} // Aumentado para 7.5 para movimento mais rápido mas ainda suave
+              moveSpeed={25} // Aumentado para 25 para movimento super rápido e responsivo
               onMovementComplete={handlePlayerMovementComplete}
             />
           )}

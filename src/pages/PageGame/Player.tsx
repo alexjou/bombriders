@@ -51,6 +51,7 @@ const Player: React.FC<PlayerProps> = ({
 
   // Referência para rotação durante o movimento
   const rotationRef = useRef({ x: 0, y: 0, z: 0 });
+
   // Configura o modelo e animações iniciais
   useEffect(() => {
     // Aplica escala aumentada ao modelo (40% maior que o anterior)
@@ -71,6 +72,7 @@ const Player: React.FC<PlayerProps> = ({
         setCurrentAnimation('idle');
       }
     }
+
     // Configura materiais para efeito de invencibilidade
     scene.traverse((object) => {
       if (object.type === 'Mesh') {
@@ -89,14 +91,17 @@ const Player: React.FC<PlayerProps> = ({
       Object.values(actions).forEach(action => action?.stop());
     };
   }, [scene, names, actions]);
+
   // Quando a targetPosition é definida, iniciamos a animação de movimento
   useEffect(() => {
     console.log("targetPosition mudou:", targetPosition);
+
     if (targetPosition) {
       // Atualiza a posição alvo para onde o jogador deverá se mover
       visualTargetPosition.current.set(targetPosition[0], targetPosition[1], targetPosition[2]);
+      console.log("visualTargetPosition atualizado para:", visualTargetPosition.current);
 
-      // Inicia o movimento suave
+      // Força isMoving para true e reinicia o progresso
       isMoving.current = true;
       movementProgress.current = 0;
 
@@ -106,8 +111,8 @@ const Player: React.FC<PlayerProps> = ({
         currentPosition.current
       );
 
-      // Rotaciona o modelo na direção do movimento
-      if (direction.length() > 0.01) {
+      // Rotaciona o modelo na direção do movimento - rotação imediata
+      if (direction.length() > 0.001) { // Limiar menor para detectar qualquer movimento
         // Rotação apenas no eixo Y (virar para a direção)
         const angle = Math.atan2(direction.x, direction.z);
         scene.rotation.y = angle;
@@ -120,7 +125,8 @@ const Player: React.FC<PlayerProps> = ({
         actions[runAnimName].reset().fadeIn(0.2).play();
         setCurrentAnimation('run');
       }
-    } else {      // Se não houver targetPosition, usamos a posição do grid (teleporte sem animação)
+    } else {
+      // Se não houver targetPosition, usamos a posição do grid (teleporte sem animação)
       visualTargetPosition.current.set(gridPosition[0], gridPosition[1], gridPosition[2]);
       currentPosition.current.set(gridPosition[0], gridPosition[1], gridPosition[2]);
 
@@ -128,25 +134,21 @@ const Player: React.FC<PlayerProps> = ({
       if (groupRef.current) {
         groupRef.current.position.set(gridPosition[0], gridPosition[1], gridPosition[2]);
       }
-
-      console.log('Teleporte para:', gridPosition);
     }
-  }, [targetPosition, gridPosition, actions, names, currentAnimation]);
+  }, [targetPosition, gridPosition, actions, names, currentAnimation, scene.rotation]);
 
   // Função de easing personalizada para movimento mais fluido e rápido
   const customEasing = (progress: number) => {
-    // Curva otimizada para movimentos mais rápidos mantendo a sensação de suavidade
-    // Fase de aceleração mais curta e fase constante mais longa
-    if (progress < 0.15) {
-      // Aceleração inicial mais rápida (menor fase de aceleração)
-      return 4.5 * Math.pow(progress, 1.7); // Potência menor para aceleração mais agressiva
-    } else if (progress < 0.8) {
-      // Fase média ampliada (velocidade constante por mais tempo)
-      return 0.1 + (progress - 0.15) * 1.15;
+    // Curva super agressiva para movimento quase instantâneo
+    if (progress < 0.05) {
+      // Aceleração extrema no início
+      return progress * 8; // Início extremamente rápido (8x)
+    } else if (progress < 0.5) {
+      // Fase muito curta para alcançar posição rapidamente
+      return 0.4 + (progress - 0.05) * 1.2;
     } else {
-      // Desaceleração final mais curta mas ainda suave
-      const t = (progress - 0.8) / 0.2; // Normaliza para 0-1 na região final (agora menor)
-      return 0.85 + 0.15 * (1 - Math.pow(1 - t, 2)); // Desaceleração mais leve
+      // Quase nenhuma desaceleração
+      return 1.0; // Ir direto para posição final
     }
   };
 
@@ -158,13 +160,36 @@ const Player: React.FC<PlayerProps> = ({
     animTime.current = state.clock.elapsedTime;
 
     // Atualiza o mixer de animações
-    if (mixer) mixer.update(state.clock.elapsedTime);
-  });  // Usando useFrame para fazer a animação suave
+    if (mixer) mixer.update(state.clock.deltaTime);
+  });
+
+  // Usando useFrame para fazer a animação suave
   useFrame((state, delta) => {
-    // Verificar periodicamente se isMoving.current está correto
+    // Forçar verificação em cada frame se há um targetPosition mas isMoving é false
+    if (targetPosition && !isMoving.current) {
+      console.log("CORREÇÃO CRÍTICA: targetPosition existe mas isMoving é falso. Corrigindo...");
+      isMoving.current = true;
+      movementProgress.current = 0;
+
+      // Se houver, atualiza também a posição alvo
+      visualTargetPosition.current.set(targetPosition[0], targetPosition[1], targetPosition[2]);
+    }
+
+    // Verificar periodicamente o estado geral (logs menos frequentes)
     if (state.clock.elapsedTime % 1 < 0.01) {  // Log aproximadamente a cada 1 segundo
       console.log("isMoving:", isMoving.current);
+      console.log("targetPosition:", targetPosition);
+      console.log("currentPosition:", currentPosition.current);
+      console.log("visualTargetPosition:", visualTargetPosition.current);
+
+      if (groupRef.current) {
+        console.log("groupRef.position:",
+          groupRef.current.position.x.toFixed(2),
+          groupRef.current.position.y.toFixed(2),
+          groupRef.current.position.z.toFixed(2));
+      }
     }
+
     // Efeito de piscar para invencibilidade
     if (isInvincible && materialRef.current) {
       // Alterna a visibilidade (efeito de piscar)
@@ -176,15 +201,22 @@ const Player: React.FC<PlayerProps> = ({
 
     // Verifica se o jogador está se movendo
     if (isMoving.current) {
-      // Calcula o passo de animação baseado no delta de tempo e velocidade
-      // Ajuste adaptativo aprimorado: movimento ainda mais rápido em células mais distantes
-      const distance = currentPosition.current.distanceTo(visualTargetPosition.current);
-      // Velocidade base aumentada, fator de adaptação maior para células distantes
-      const adaptiveSpeed = moveSpeed * (1 + Math.min(distance - 1, 0) * 0.35);
+      // Velocidade extrema para garantir resposta rápida
+      // Movimento super rápido (quase imediato)
+      const adaptiveSpeed = moveSpeed * 2; // Dobrar a velocidade base
+
+      // Incremento de movimento mais agressivo
+      const progressIncrement = delta * adaptiveSpeed;
+
+      // Debug detalhado para movimentos curtos
+      if (progressIncrement < 0.01) {
+        console.warn("Incremento muito pequeno:", progressIncrement, "delta:", delta, "velocidade:", adaptiveSpeed);
+      }
 
       // Incrementa o progresso do movimento
-      movementProgress.current += delta * adaptiveSpeed;
+      movementProgress.current += progressIncrement;
       movementProgress.current = Math.min(movementProgress.current, 1);
+
       // Aplica easing personalizado ao movimento
       const easedProgress = customEasing(movementProgress.current);
 
@@ -194,33 +226,24 @@ const Player: React.FC<PlayerProps> = ({
         visualTargetPosition.current,
         easedProgress
       );
+
       // Atualiza a posição do modelo
       if (groupRef.current) {
         // Atualização explícita de cada componente da posição para garantir o movimento
         groupRef.current.position.x = lerpPosition.x;
         groupRef.current.position.y = lerpPosition.y;
         groupRef.current.position.z = lerpPosition.z;
-
-        // Debug para verificar movimento
-        console.log('Movendo groupRef:',
-          groupRef.current.position.x.toFixed(2),
-          groupRef.current.position.y.toFixed(2),
-          groupRef.current.position.z.toFixed(2),
-          'Para:',
-          lerpPosition.x.toFixed(2),
-          lerpPosition.y.toFixed(2),
-          lerpPosition.z.toFixed(2),
-          'Progresso:', easedProgress.toFixed(2));
       } else {
         console.error('groupRef.current é nulo ou indefinido!');
       }
 
-      // Detecção de chegada otimizada para finalizar o movimento mais rapidamente
+      // Detecção de chegada super-otimizada para finalizar o movimento instantaneamente
       const distanceToTarget = lerpPosition.distanceTo(visualTargetPosition.current);
-      const tolerancia = 0.05; // Aumentado para terminar movimento mais cedo
-      // Considera completo mais cedo na timeline da animação (0.9 em vez de 0.95)
-      const isAtDestination = (distanceToTarget < tolerancia && movementProgress.current > 0.9) ||
-        movementProgress.current >= 0.98; // Reduzido de 1.0 para 0.98
+      const tolerancia = 0.1; // Tolerância maior para terminar mais cedo
+
+      // Considera completo muito mais cedo na timeline da animação
+      const isAtDestination = (distanceToTarget < tolerancia && movementProgress.current > 0.7) ||
+        movementProgress.current >= 0.9; // Reduzido para terminar mais cedo
 
       if (isAtDestination) {
         // Animação completa, coloca na posição final exata
@@ -232,6 +255,7 @@ const Player: React.FC<PlayerProps> = ({
 
           console.log('Movimento concluído:', visualTargetPosition.current);
         }
+
         currentPosition.current.copy(visualTargetPosition.current);
 
         // Marca como não mais em movimento
@@ -247,12 +271,17 @@ const Player: React.FC<PlayerProps> = ({
 
         // Notifica que o movimento foi concluído
         if (onMovementComplete) {
-          console.log('Callback de movimento concluído sendo chamado');
+          console.log('Callback de movimento concluído sendo chamado!');
+          // Executa o callback imediatamente para garantir que o jogo saiba que o movimento terminou
           onMovementComplete();
+
+          // Garantir que o target position seja limpo
+          visualTargetPosition.current.copy(currentPosition.current);
         }
       }
     }
   });
+
   // @ts-nocheck - desativa verificações de tipo a partir daqui
   return (
     <group ref={groupRef} position={[gridPosition[0], gridPosition[1], gridPosition[2]]}>
