@@ -21,7 +21,8 @@ export function findPath(grid: Grid,
   end: { r: number; c: number },   // Alterado para usar r, c para consistência
   bombs: BombData[], // Adicionado parâmetro para bombas ativas
   gridWidth: number,
-  gridHeight: number
+  gridHeight: number,
+  allowDestructible: boolean = false // Permitir caminhos através de blocos destrutíveis em casos de emergência
 ): { r: number; c: number }[] | null { // Retorno também usa r, c
   // Verificações de segurança para evitar cálculos inválidos
   if (!grid || !Array.isArray(grid) || grid.length === 0) {
@@ -80,9 +81,14 @@ export function findPath(grid: Grid,
       return path.reverse();
     }
 
-    closedList.add(currentKey);
-
-    const neighborsCoords = [
+    closedList.add(currentKey);    // Interface estendida para direções com penalidade
+    interface Direction {
+      x: number;
+      y: number;
+      penalty?: number; // Penalidade de movimento para terrenos diferentes
+    }
+    
+    const neighborsCoords: Direction[] = [
       { x: currentNode.x, y: currentNode.y - 1 }, // Up (row decreases)
       { x: currentNode.x, y: currentNode.y + 1 }, // Down (row increases)
       { x: currentNode.x - 1, y: currentNode.y }, // Left (col decreases)
@@ -90,17 +96,24 @@ export function findPath(grid: Grid,
     ];
 
     for (const neighborCoord of neighborsCoords) {
-      const { x, y } = neighborCoord; // x é col, y é row
-
-      if (x < 0 || x >= gridWidth || y < 0 || y >= gridHeight) {
+      const { x, y } = neighborCoord; // x é col, y é row      // Verificação mais rigorosa dos limites do grid para evitar colisões com as bordas
+      if (x <= 0 || x >= gridWidth - 1 || y <= 0 || y >= gridHeight - 1) {
         continue;
       }
 
       const neighborKey = `${x},${y}`;
       if (closedList.has(neighborKey)) {
         continue;
-      }      // Verificações de transposição para células que não são o destino final
+      }
+      
+      // Verificações de transposição para células que não são o destino final
       const isDestination = (x === end.c && y === end.r);
+
+      // Primeira verificação de segurança: a célula precisa existir no grid
+      if (y >= grid.length || x >= grid[y].length) {
+        console.error(`Tentativa de acessar posição inválida no grid: [${y}][${x}]`);
+        continue;
+      }
 
       // Se a célula não for o destino, verificamos todas as restrições
       if (!isDestination) {
@@ -108,15 +121,23 @@ export function findPath(grid: Grid,
         const isBombLocation = bombs.some(bomb => bomb.col === x && bomb.row === y);
         if (isBombLocation) {
           continue;
-        }
-
-        const cellType = grid[y][x]; // Acessar grid com [row][col]
-        if (
-          cellType === CellType.SOLID_BLOCK ||
-          cellType === CellType.DESTRUCTIBLE_BLOCK
-          // CellType.BOMB já é tratado pela verificação `isBombLocation` acima
-        ) {
+        }        const cellType = grid[y][x]; // Acessar grid com [row][col]
+        
+        // Blocos sólidos são sempre intransponíveis
+        if (cellType === CellType.SOLID_BLOCK) {
           continue;
+        }
+        
+        // Blocos destrutíveis são intransponíveis por padrão, 
+        // mas podem ser permitidos com o parâmetro allowDestructible
+        if (cellType === CellType.DESTRUCTIBLE_BLOCK) {
+          if (!allowDestructible) {
+            continue;
+          } else {
+            // Se permitirmos passar por blocos destrutíveis, adicionamos uma penalidade
+            // ao custo para que caminhos através de blocos vazios sejam preferidos
+            neighborCoord.penalty = 5;
+          }
         }
       } else {
         // Se for o destino, só verificamos se é um bloco sólido
@@ -127,7 +148,8 @@ export function findPath(grid: Grid,
         // para que o inimigo possa identificar um caminho até o jogador
       }
 
-      const tentativeG = currentNode.g + 1; // Cost to move to a neighbor is 1
+      // Custo base é 1, mas adicionamos penalidade se existir
+      const tentativeG = currentNode.g + 1 + (neighborCoord.penalty || 0);
       const neighborNode = getNode(x, y);
 
       if (tentativeG < neighborNode.g) {

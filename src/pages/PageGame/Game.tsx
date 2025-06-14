@@ -730,15 +730,43 @@ export default function Game() {
         const currentGridForPathfinding = gridRef.current;
         const activeBombs = bombsRef.current;
 
-        const nextEnemiesState: EnemyData[] = currentEnemies.map(enemy => {
-          const path = findPath(
+        const nextEnemiesState: EnemyData[] = currentEnemies.map(enemy => {          // Primeiro tenta encontrar um caminho normal (sem atravessar blocos destrutíveis)
+          let path = findPath(
             currentGridForPathfinding as Grid,
             { r: enemy.row, c: enemy.col },
             { r: playerPos[1], c: playerPos[0] },
             activeBombs,
             GRID_COLUMNS,
-            GRID_ROWS
-          ); let nextMove = { r: enemy.row, c: enemy.col };
+            GRID_ROWS,
+            false // Não permitir caminho através de blocos destrutíveis inicialmente
+          );
+
+          // Se não encontrou caminho, tenta novamente permitindo atravessar blocos destrutíveis
+          // (para que o inimigo pelo menos se direcione para o jogador, mesmo que precisando destruir blocos)
+          if (!path) {
+            path = findPath(
+              currentGridForPathfinding as Grid,
+              { r: enemy.row, c: enemy.col },
+              { r: playerPos[1], c: playerPos[0] },
+              activeBombs,
+              GRID_COLUMNS,
+              GRID_ROWS,
+              true // Permitir caminho através de blocos destrutíveis como último recurso
+            );
+
+            if (path) {
+              console.log(`Inimigo ${enemy.id} - Encontrou caminho alternativo através de blocos destrutíveis`);
+            }
+          }
+
+          // Interface para representar um movimento de inimigo com score
+          interface EnemyMove {
+            r: number;
+            c: number;
+            score?: number;
+          }
+
+          let nextMove: EnemyMove = { r: enemy.row, c: enemy.col };
 
           // Chance de movimento aleatório para evitar que inimigos fiquem parados
           const useRandomMovement = Math.random() < 0.3; // 30% de chance de movimento aleatório
@@ -763,8 +791,7 @@ export default function Game() {
               console.log(`Inimigo ${enemy.id} - Movimento pelo pathfinding inválido, tentando aleatório`);
               nextMove = { r: enemy.row, c: enemy.col }; // Reset para posição atual
             }
-          }
-          // Se não temos um caminho ou decidimos usar movimento aleatório
+          }          // Se não temos um caminho ou decidimos usar movimento aleatório
           if (useRandomMovement || nextMove.r === enemy.row && nextMove.c === enemy.col) {
             // Movimento aleatório - mais agressivo e com mais opções
             const directions = [
@@ -780,15 +807,30 @@ export default function Game() {
               [directions[i], directions[j]] = [directions[j], directions[i]];
             }
 
-            // Criar movimentos possíveis com base nas direções
-            const possibleMoves: { r: number, c: number, isValid: boolean }[] = directions.map(dir => {
+            // Calcular a direção aproximada para o jogador para usar como preferência
+            const dirToPlayer = {
+              r: playerPos[1] > enemy.row ? 1 : (playerPos[1] < enemy.row ? -1 : 0),
+              c: playerPos[0] > enemy.col ? 1 : (playerPos[0] < enemy.col ? -1 : 0)
+            };
+
+            // Reordenar as direções para priorizar o movimento em direção ao jogador
+            // (mas ainda manter alguma aleatoriedade para comportamento mais natural)
+            directions.sort((a, b) => {
+              const aMatchesPlayer = (a.r === dirToPlayer.r || a.c === dirToPlayer.c) ? 1 : 0;
+              const bMatchesPlayer = (b.r === dirToPlayer.r || b.c === dirToPlayer.c) ? 1 : 0;
+              return bMatchesPlayer - aMatchesPlayer;
+            });            // Criar movimentos possíveis com base nas direções
+            const possibleMoves: { r: number, c: number, isValid: boolean, score: number }[] = directions.map(dir => {
               const r = enemy.row + dir.r;
               const c = enemy.col + dir.c;
 
+              // Verificação mais rigorosa de limites do grid para evitar atravessar paredes
+              if (r <= 0 || r >= GRID_ROWS - 1 || c <= 0 || c >= GRID_COLUMNS - 1) {
+                return { r, c, isValid: false, score: 0 };
+              }
+
               // Verificar se o movimento é válido
               const isValid =
-                r > 0 && r < GRID_ROWS - 1 &&
-                c > 0 && c < GRID_COLUMNS - 1 &&
                 // Permitir movimento para células vazias ou para a posição do jogador (se não estiver invencível)
                 (currentGridForPathfinding[r][c] === CellType.EMPTY ||
                   (playerPos[0] === c && playerPos[1] === r && !isPlayerInvincibleRef.current)) &&
@@ -798,48 +840,151 @@ export default function Game() {
                   otherEnemy.id !== enemy.id && otherEnemy.row === r && otherEnemy.col === c
                 );
 
-              return { r, c, isValid };
+              // Calcular um score para esta direção baseado em:
+              // 1. Se move em direção ao jogador
+              // 2. Se evita ficar preso (considerando quantas saídas a nova posição tem)
+              let score = 0;
+
+              // Bonus para movimentos em direção ao jogador
+              if (dir.r === dirToPlayer.r) score += 5;
+              if (dir.c === dirToPlayer.c) score += 5;
+
+              // Verificar se a célula tem saídas (para evitar becos sem saída)
+              if (isValid) {
+                // Contar quantas células adjacentes são livres a partir desta posição
+                const adjacentDirections = [
+                  { r: r + 1, c },
+                  { r: r - 1, c },
+                  { r, c: c + 1 },
+                  { r, c: c - 1 }
+                ];
+
+                const exitCount = adjacentDirections.filter(adj =>
+                  adj.r > 0 && adj.r < GRID_ROWS - 1 &&
+                  adj.c > 0 && adj.c < GRID_COLUMNS - 1 &&
+                  currentGridForPathfinding[adj.r][adj.c] === CellType.EMPTY
+                ).length;
+
+                // Bonus para posições com mais saídas
+                score += exitCount * 3;
+              } return { r, c, isValid, score };
             });
 
-            // Filtrar e ordenar movimentos válidos
+            // Filtrar e ordenar movimentos válidos            // Filtrar movimentos válidos e ordenar por score (para movimentos mais inteligentes)
             const validMoves = possibleMoves.filter(move => move.isValid);
 
             if (validMoves.length > 0) {
-              // Primeiro, tentar mover em direção ao jogador (se possível)
-              const moveTowardsPlayer = validMoves.find(move => {
-                const distanceToPlayer = Math.abs(move.r - playerPos[1]) + Math.abs(move.c - playerPos[0]);
-                const currentDistanceToPlayer = Math.abs(enemy.row - playerPos[1]) + Math.abs(enemy.col - playerPos[0]);
-                return distanceToPlayer < currentDistanceToPlayer;
-              });
+              // Ordenar movimentos por score (maior para menor)
+              validMoves.sort((a, b) => b.score - a.score);
 
-              if (moveTowardsPlayer && Math.random() > 0.3) { // 70% de chance de preferir movimento em direção ao jogador
-                nextMove = moveTowardsPlayer;
-                console.log(`Inimigo ${enemy.id} - Movimento direcionado para o jogador [${nextMove.c}, ${nextMove.r}]`);
+              // Pegar os top 2 movimentos (ou todos se houver menos de 2)
+              const topMoves = validMoves.slice(0, Math.min(2, validMoves.length));
+
+              // Introduzir alguma aleatoriedade (70% de chance do melhor movimento, 30% para o segundo melhor)
+              if (topMoves.length > 1 && Math.random() > 0.7) {
+                nextMove = topMoves[1]; // Segunda melhor opção                console.log(`Inimigo ${enemy.id} - Movimento secundário inteligente para [${nextMove.c}, ${nextMove.r}]`);
               } else {
-                // Caso não seja possível ou não deseje se mover em direção ao jogador, escolher aleatoriamente
-                nextMove = validMoves[Math.floor(Math.random() * validMoves.length)];
-                console.log(`Inimigo ${enemy.id} - Movimento aleatório para [${nextMove.c}, ${nextMove.r}]`);
+                nextMove = topMoves[0]; // Melhor opção
+                console.log(`Inimigo ${enemy.id} - Melhor movimento para [${nextMove.c}, ${nextMove.r}]`);
               }
-            } else {
-              // Tentar mover-se para qualquer direção, mesmo que bloqueada por blocos destrutíveis
-              const destrutiveDirections = directions.map(dir => {
+
+              // Verificar se este é um movimento em direção ao jogador
+              const distanceToPlayer = Math.abs(nextMove.r - playerPos[1]) + Math.abs(nextMove.c - playerPos[0]);
+              const currentDistanceToPlayer = Math.abs(enemy.row - playerPos[1]) + Math.abs(enemy.col - playerPos[0]);
+
+              if (distanceToPlayer < currentDistanceToPlayer) {
+                console.log(`Inimigo ${enemy.id} - Movimento em direção ao jogador [${nextMove.c}, ${nextMove.r}]`);
+              }
+            } else {            // Tentar mover-se para qualquer direção, mesmo que bloqueada por blocos destrutíveis
+              const allDirections = directions.map(dir => {
                 const r = enemy.row + dir.r;
                 const c = enemy.col + dir.c;
 
-                // Verificar se o movimento é para um bloco destrutível (pode ser útil para o inimigo escapar)
+                // Verificar os diferentes tipos de células para tomar decisões mais inteligentes
                 const isDestructible =
                   r > 0 && r < GRID_ROWS - 1 &&
                   c > 0 && c < GRID_COLUMNS - 1 &&
                   currentGridForPathfinding[r][c] === CellType.DESTRUCTIBLE_BLOCK;
 
-                return { r, c, isDestructible };
-              }).filter(move => move.isDestructible);
+                const isEmpty =
+                  r > 0 && r < GRID_ROWS - 1 &&
+                  c > 0 && c < GRID_COLUMNS - 1 &&
+                  currentGridForPathfinding[r][c] === CellType.EMPTY;
 
-              // Se encontramos blocos destrutíveis, o inimigo fica parado (esperando que um desses blocos seja destruído)
-              if (destrutiveDirections.length > 0) {
-                console.log(`Inimigo ${enemy.id} - Esperando liberação de blocos destrutíveis ao redor`);
-              } else {
-                console.log(`Inimigo ${enemy.id} - Completamente preso, sem opções de movimento`);
+                const hasBomb = activeBombs.some(b => b.row === r && b.col === c);
+
+                const hasEnemy = currentEnemies.some(otherEnemy =>
+                  otherEnemy.id !== enemy.id && otherEnemy.row === r && otherEnemy.col === c
+                );
+
+                // Classificação de prioridade: vazio > destrutível > outros
+                const priority = isEmpty ? 3 : (isDestructible ? 2 : 1);
+
+                return { r, c, isDestructible, isEmpty, hasBomb, hasEnemy, priority };
+              });
+
+              // Ordenar direções por prioridade (células vazias primeiro)
+              allDirections.sort((a, b) => b.priority - a.priority);
+              // Tentar encontrar alguma direção que permita movimento, mesmo que não ideal
+              if (allDirections.some(dir => dir.isEmpty)) {
+                // Encontramos pelo menos uma célula vazia
+                const emptyDirections = allDirections.filter(dir => dir.isEmpty);
+
+                // Se existe uma direção vazia em direção ao jogador, priorize-a
+                const directionTowardsPlayer = emptyDirections.find(dir => {
+                  const currentDistToPlayer = Math.abs(enemy.row - playerPos[1]) + Math.abs(enemy.col - playerPos[0]);
+                  const newDistToPlayer = Math.abs(dir.r - playerPos[1]) + Math.abs(dir.c - playerPos[0]);
+                  return newDistToPlayer < currentDistToPlayer;
+                });
+
+                if (directionTowardsPlayer && Math.random() < 0.8) {
+                  nextMove = directionTowardsPlayer;
+                  console.log(`Inimigo ${enemy.id} - Encontrou saída em direção ao jogador [${nextMove.c}, ${nextMove.r}]`);
+                } else {
+                  nextMove = emptyDirections[Math.floor(Math.random() * emptyDirections.length)];
+                  console.log(`Inimigo ${enemy.id} - Encontrou saída alternativa para [${nextMove.c}, ${nextMove.r}]`);
+                }
+              } else if (allDirections.some(dir => dir.isDestructible)) {
+                // Se não há células vazias, mas há blocos destrutíveis, tenha uma chance de se mover
+                // para uma outra posição (ainda bloqueada) para evitar ficar preso no mesmo lugar
+                const destructibleDirections = allDirections.filter(dir => dir.isDestructible);
+
+                // Verificar se há uma bomba próxima que pode destruir um bloco
+                const hasBombNearby = activeBombs.some(bomb => {
+                  const distanceToEnemy = Math.abs(bomb.row - enemy.row) + Math.abs(bomb.col - enemy.col);
+                  return distanceToEnemy <= 2; // Bomba perto o suficiente para potencialmente destruir um bloco
+                });
+
+                // Se uma bomba estiver próxima, tente ficar parado para evitar ser atingido
+                if (hasBombNearby) {
+                  console.log(`Inimigo ${enemy.id} - Detectou bomba próxima, mantendo posição`);
+                }
+                // 20% de chance de escolher outra posição de bloqueio para evitar estagnação
+                else if (Math.random() < 0.2) {
+                  nextMove = destructibleDirections[Math.floor(Math.random() * destructibleDirections.length)];
+                  console.log(`Inimigo ${enemy.id} - Tentando nova posição de espera em [${nextMove.c}, ${nextMove.r}]`);
+                } else {
+                  console.log(`Inimigo ${enemy.id} - Esperando liberação de blocos destrutíveis ao redor`);
+                }
+              } else {                // Se não há movimento possível, tentar um movimento aleatório desesperado
+                // com uma pequena chance, para evitar travamentos completos
+                if (Math.random() < 0.05) { // 5% de chance de fazer um movimento "impossível"
+                  const nonSolidDirections = allDirections.filter(dir => {
+                    const cellType = currentGridForPathfinding[dir.r][dir.c];
+                    // Permitir apenas movimentos para células que não são blocos sólidos
+                    return cellType !== CellType.SOLID_BLOCK;
+                  });
+
+                  if (nonSolidDirections.length > 0) {
+                    const desperateMove = nonSolidDirections[Math.floor(Math.random() * nonSolidDirections.length)];
+                    nextMove = desperateMove;
+                    console.log(`Inimigo ${enemy.id} - Movimento desesperado para [${nextMove.c}, ${nextMove.r}]`);
+                  } else {
+                    console.log(`Inimigo ${enemy.id} - Tentativa de movimento desesperado falhou, todas as direções têm blocos sólidos`);
+                  }
+                } else {
+                  console.log(`Inimigo ${enemy.id} - Completamente preso, sem opções de movimento`);
+                }
               }
             }
           }
@@ -883,6 +1028,18 @@ export default function Game() {
               return { ...enemy };
             }
           }          // Se não houve colisão com o jogador, inimigo se move para nextMove
+          // Verificação final de segurança para evitar movimento através de paredes
+          const isValidMove =
+            nextMove.r > 0 && nextMove.r < GRID_ROWS - 1 &&
+            nextMove.c > 0 && nextMove.c < GRID_COLUMNS - 1 &&
+            (currentGridForPathfinding[nextMove.r][nextMove.c] === CellType.EMPTY ||
+              (playerPos[0] === nextMove.c && playerPos[1] === nextMove.r));
+
+          if (!isValidMove) {
+            console.log(`ERRO: Inimigo ${enemy.id} tentou movimento inválido para [${nextMove.c},${nextMove.r}]. Movimento cancelado.`);
+            return { ...enemy }; // Mantém a posição atual
+          }
+
           const moved = enemy.row !== nextMove.r || enemy.col !== nextMove.c;
           if (moved) {
             console.log(`Inimigo ${enemy.id} se moveu de [${enemy.col},${enemy.row}] para [${nextMove.c},${nextMove.r}]`);
